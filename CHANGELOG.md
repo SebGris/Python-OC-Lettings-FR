@@ -45,3 +45,29 @@ Django 4.2 may introduce some breaking changes from Django 3.0. Review the follo
 ### Files Modified
 - `requirements.txt`: Updated dependency versions
 - `CHANGELOG.md`: Created to document changes
+
+---
+
+## [2025-11-24] - Django 4.2 Settings Update
+
+### Changed
+
+#### Settings Configuration (oc_lettings_site/settings.py)
+- **Removed**: `USE_L10N = True` (line 103)
+  - **Reason**: This setting is deprecated in Django 4.2 and will be removed in Django 5.0
+  - **What it was**: `USE_L10N` (Localization) controlled whether Django should format dates, numbers, and other data using locale-specific formatting
+  - **Why removed**: Starting with Django 4.0, localized formatting is **always enabled by default**. The setting became redundant and was deprecated.
+  - **Impact**: No functional change - localization continues to work automatically
+  - **Benefit**: Eliminates deprecation warning: `RemovedInDjango50Warning: The USE_L10N setting is deprecated`
+
+#### What USE_L10N Did
+When `USE_L10N = True` was set, Django would:
+- Format dates according to the current locale (e.g., "11/24/2025" in US, "24/11/2025" in Europe)
+- Format numbers with appropriate thousand separators (e.g., "1,000.00" vs "1.000,00")
+- Use locale-specific currency symbols and decimal points
+- Apply regional formatting to time zones
+
+**In Django 4.0+**, this behavior is the standard and cannot be disabled, making the setting obsolete.
+
+### Files Modified
+- `oc_lettings_site/settings.py`: Removed deprecated `USE_L10N` setting
