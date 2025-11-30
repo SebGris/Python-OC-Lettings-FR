@@ -2,3 +2,5 @@
 *.pyc
 venv
 .claude/
+.coverage
+htmlcov/
