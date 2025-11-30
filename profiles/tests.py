@@ -1,3 +1,1 @@
-from django.test import TestCase
-
-# Create your tests here.
+# Tests for profiles app are in oc_lettings_site/tests.py

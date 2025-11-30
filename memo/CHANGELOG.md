@@ -6,9 +6,68 @@
 
 | Date | Version | Description |
 |------|---------|-------------|
+| 2025-11-30 | 1.3.0 | Corrections tests et migrations après refactorisation |
 | 2025-11-30 | 1.2.0 | Suite de tests complète (96% couverture) |
 | 2025-11-24 | 1.1.1 | Suppression setting USE_L10N dépréciée |
 | 2025-11-24 | 1.1.0 | Mise à jour Django 4.2.16 pour Python 3.13 |
+
+---
+
+## [1.3.0] - 2025-11-30 - Corrections tests et migrations
+
+### Résumé
+Corrections nécessaires après la refactorisation pour que pytest et flake8 fonctionnent correctement avec les nouvelles applications `lettings` et `profiles`.
+
+### Fixed
+
+#### Migrations de données robustes
+- **Problème** : `LookupError: No installed app with label 'oc_lettings_site'` lors de pytest
+- **Cause** : Les migrations référençaient des modèles supprimés
+- **Solution** : Encapsulation dans `try/except LookupError` pour ignorer si les anciens modèles n'existent plus
+- **Fichiers** : `lettings/migrations/0002_migrate_data.py`, `profiles/migrations/0002_migrate_data.py`
+
+#### Imports des tests mis à jour
+- **Problème** : `ImportError: cannot import name 'Address' from 'oc_lettings_site.models'`
+- **Solution** : Mise à jour des imports vers les nouvelles applications
+  ```python
+  from lettings.models import Address, Letting
+  from profiles.models import Profile
+  ```
+
+#### URLs avec namespaces dans les tests
+- **Avant** : `reverse("lettings_index")`, `reverse("profiles_index")`
+- **Après** : `reverse("lettings:index")`, `reverse("profiles:index")`
+
+#### Templates dans les tests
+- **Avant** : `"lettings_index.html"`
+- **Après** : `"lettings/index.html"`
+
+#### Corrections flake8
+- Suppression imports inutilisés dans `lettings/tests.py`, `profiles/tests.py`, `oc_lettings_site/admin.py`
+- Correction espacement dans `settings.py` (E231)
+
+### Changed
+
+#### Templates mis à jour
+- `templates/base.html` : URLs avec namespaces (`profiles:index`, `lettings:index`)
+- `templates/index.html` : URLs avec namespaces
+
+### Vérifications
+
+```bash
+pytest    # 26 tests passent, couverture 100%
+flake8    # Aucune erreur
+```
+
+### Files Modified
+- `lettings/migrations/0002_migrate_data.py`
+- `profiles/migrations/0002_migrate_data.py`
+- `oc_lettings_site/tests.py`
+- `oc_lettings_site/admin.py`
+- `oc_lettings_site/settings.py`
+- `lettings/tests.py`
+- `profiles/tests.py`
+- `templates/base.html`
 
 ---
 
