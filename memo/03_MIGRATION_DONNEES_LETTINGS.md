@@ -43,14 +43,12 @@ def migrate_letting_data(apps, schema_editor):
     """Transfère les données de oc_lettings_site.Letting vers lettings.Letting"""
     OldLetting = apps.get_model('oc_lettings_site', 'Letting')
     NewLetting = apps.get_model('lettings', 'Letting')
-    NewAddress = apps.get_model('lettings', 'Address')
 
     for old_letting in OldLetting.objects.all():
-        new_address = NewAddress.objects.get(id=old_letting.address_id)
         NewLetting.objects.create(
             id=old_letting.id,
             title=old_letting.title,
-            address=new_address,
+            address_id=old_letting.address_id,
         )
 
 
@@ -70,7 +68,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('lettings', '0001_initial'),
-        ('oc_lettings_site', '0001_initial'),
     ]
 
     operations = [
@@ -97,6 +94,22 @@ C'est un registre qui contient les **versions historiques** des modèles. On l'u
 OldAddress = apps.get_model('oc_lettings_site', 'Address')
 ```
 
+Cette ligne retourne un modèle Django qui permet d'accéder à la table SQLite3 correspondante :
+
+| Code Python | Table SQLite3 |
+|-------------|---------------|
+| `apps.get_model('oc_lettings_site', 'Address')` | `oc_lettings_site_address` |
+| `apps.get_model('lettings', 'Address')` | `lettings_address` |
+
+**Convention de nommage Django** : `<nom_app>_<nom_modèle_en_minuscule>`
+
+Ensuite, on utilise l'ORM Django normalement :
+
+```python
+OldAddress.objects.all()        # SELECT * FROM oc_lettings_site_address
+NewAddress.objects.create(...)  # INSERT INTO lettings_address ...
+```
+
 **Pourquoi ne pas importer directement ?**
 ```python
 # NE PAS FAIRE :
@@ -112,13 +125,15 @@ Car :
 
 Permet de modifier le schéma de la base de données (créer/supprimer tables, colonnes, index...).
 
-**Utilisation courante** : accéder à l'alias de connexion pour les bases multiples :
+**Dans notre cas** : non utilisé car on ne fait que copier des données, pas modifier la structure. Mais le paramètre est **obligatoire** car Django appelle toujours la fonction avec ces deux arguments.
+
+Exemple d'utilisation (pour modifier une table) :
 ```python
-db_alias = schema_editor.connection.alias
-Country.objects.using(db_alias).bulk_create([...])
+def add_column(apps, schema_editor):
+    schema_editor.execute("ALTER TABLE my_table ADD COLUMN new_field VARCHAR(100)")
 ```
 
-**Dans notre cas** : non utilisé car on ne fait que copier des données, pas modifier la structure. Mais le paramètre est **obligatoire** car Django appelle toujours la fonction avec ces deux arguments.
+Source : [RunPython - Django Documentation](https://docs.djangoproject.com/en/5.2/ref/migration-operations/#runpython)
 
 ### `operations` - Les opérations à exécuter
 
@@ -194,39 +209,35 @@ Django exécutera `reverse_address_data` et `reverse_letting_data` pour supprime
 ```python
 dependencies = [
     ('lettings', '0001_initial'),
-    ('oc_lettings_site', '0001_initial'),
 ]
 ```
 
-Cela signifie : **"Cette migration ne peut s'exécuter QU'APRÈS ces deux migrations"**.
+Cela signifie : **"Cette migration ne peut s'exécuter QU'APRÈS `lettings.0001_initial`"**.
 
-#### Pourquoi ces deux dépendances ?
-
-**1. `('lettings', '0001_initial')`**
+#### Pourquoi cette dépendance ?
 
 La migration `0001_initial` de `lettings` **crée la table `lettings_address`**.
 → On doit créer la table AVANT d'y copier des données.
 
-**2. `('oc_lettings_site', '0001_initial')`**
+#### Et `oc_lettings_site` ?
 
-La migration `0001_initial` de `oc_lettings_site` **crée la table `oc_lettings_site_address`**.
-→ On doit avoir les données sources AVANT de pouvoir les copier.
+On n'a **pas** besoin de dépendance vers `oc_lettings_site` car :
+1. Le `try/except LookupError` gère le cas où les anciens modèles n'existent plus
+2. Cela permet à pytest de fonctionner (il crée une base de données vierge sans les anciennes tables)
 
 #### Visualisation
 
 ```
-oc_lettings_site.0001_initial       lettings.0001_initial
-   (crée l'ancienne table)           (crée la nouvelle table)
-            ↓                                ↓
-            └──────────┬─────────────────────┘
-                       ↓
-              lettings.0002_migrate_data
-              (copie les données de l'une vers l'autre)
+lettings.0001_initial
+   (crée la nouvelle table)
+            ↓
+lettings.0002_migrate_data
+   (copie les données SI les anciennes tables existent)
 ```
 
-#### Sans ces dépendances ?
+#### Sans cette dépendance ?
 
-Django pourrait exécuter `0002_migrate_data` **avant** que les tables existent → erreur !
+Django pourrait exécuter `0002_migrate_data` **avant** que la table existe → erreur !
 
 ```
 django.db.utils.OperationalError: no such table: lettings_address
@@ -253,6 +264,29 @@ Important pour :
 - Maintenir les relations (ForeignKey)
 - Permettre un rollback propre
 - Éviter les conflits d'ID
+
+### Utilisation de `address_id` au lieu de `address`
+
+```python
+NewLetting.objects.create(
+    id=old_letting.id,
+    title=old_letting.title,
+    address_id=old_letting.address_id,  # Utilise directement l'ID
+)
+```
+
+Django permet d'assigner directement l'ID d'une clé étrangère via `<field>_id` au lieu de passer l'objet. Cela évite une requête supplémentaire en base de données :
+
+```python
+# ❌ Moins efficace : fait une requête SELECT pour récupérer l'objet Address
+new_address = NewAddress.objects.get(id=old_letting.address_id)
+NewLetting.objects.create(address=new_address)
+
+# ✅ Plus efficace : assigne directement l'ID sans requête supplémentaire
+NewLetting.objects.create(address_id=old_letting.address_id)
+```
+
+Cela fonctionne car on préserve les mêmes IDs lors de la migration des `Address`.
 
 ## Étape 3 : Appliquer les migrations
 
@@ -295,5 +329,7 @@ print(f"Letting: {Letting.objects.count()} enregistrements")
 
 ## Sources
 
-- [Migration Operations - Django Documentation](https://docs.djangoproject.com/en/5.2/ref/migration-operations/#runpython)
-- [How to create database migrations - Django Documentation](https://docs.djangoproject.com/en/5.0/howto/writing-migrations/)
+- [Opérations de migration - Documentation Django](https://docs.djangoproject.com/fr/5.2/ref/migration-operations/)
+- [RunPython - Documentation Django](https://docs.djangoproject.com/fr/5.2/ref/migration-operations/#runpython)
+- [Écriture de migrations - Documentation Django](https://docs.djangoproject.com/fr/5.2/howto/writing-migrations/)
+- [Migration de données entre applications tierces - Documentation Django](https://docs.djangoproject.com/fr/5.2/howto/writing-migrations/#migrating-data-between-third-party-apps)
