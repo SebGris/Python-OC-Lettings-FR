@@ -20,30 +20,12 @@ from django.contrib.auth.models import User
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profiles_profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     favorite_city = models.CharField(max_length=64, blank=True)
 
     def __str__(self):
         return self.user.username
 ```
-
-### Problème rencontré : conflit de `related_name`
-
-Lors de la création du modèle, Django a retourné cette erreur :
-
-```
-ERRORS:
-oc_lettings_site.Profile.user: (fields.E304) Reverse accessor 'User.profile'
-for 'oc_lettings_site.Profile.user' clashes with reverse accessor for 'profiles.Profile.user'.
-```
-
-**Explication** : Les deux modèles `Profile` ont une relation `OneToOneField` vers `User`. Par défaut, Django crée un accesseur inverse `user.profile` pour chacun, ce qui crée un conflit.
-
-**Solution** : Ajouter `related_name='profiles_profile'` au nouveau modèle pour différencier les accesseurs :
-- `user.profile` → ancien modèle (`oc_lettings_site.Profile`)
-- `user.profiles_profile` → nouveau modèle (`profiles.Profile`)
-
-Ce `related_name` temporaire sera supprimé après la suppression de l'ancien modèle.
 
 ## Étape 3 : Enregistrer l'application
 
@@ -74,11 +56,19 @@ Fichier `profiles/migrations/0002_migrate_data.py` :
 from django.db import migrations
 
 
-def migrate_profile_data(apps, schema_editor):  # schema_editor non utilisé
-    """Transfère les données de oc_lettings_site.Profile vers profiles.Profile"""
-    OldProfile = apps.get_model('oc_lettings_site', 'Profile')
-    NewProfile = apps.get_model('profiles', 'Profile')
+def migrate_profile_data(apps, schema_editor):
+    """Transfère les données de oc_lettings_site.Profile vers profiles.Profile.
 
+    Cette migration a été exécutée lors de la refactorisation initiale.
+    Elle ne fait rien si les anciens modèles n'existent plus.
+    """
+    try:
+        OldProfile = apps.get_model('oc_lettings_site', 'Profile')
+    except LookupError:
+        # Les anciens modèles n'existent plus, migration déjà effectuée
+        return
+
+    NewProfile = apps.get_model('profiles', 'Profile')
     for old_profile in OldProfile.objects.all():
         NewProfile.objects.create(
             id=old_profile.id,
@@ -87,7 +77,7 @@ def migrate_profile_data(apps, schema_editor):  # schema_editor non utilisé
         )
 
 
-def reverse_profile_data(apps, schema_editor):  # schema_editor non utilisé
+def reverse_profile_data(apps, schema_editor):
     """Supprime les données de profiles.Profile (pour rollback)"""
     NewProfile = apps.get_model('profiles', 'Profile')
     NewProfile.objects.all().delete()
@@ -97,7 +87,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('profiles', '0001_initial'),
-        ('oc_lettings_site', '0001_initial'),  # Dépend des anciennes tables
     ]
 
     operations = [
@@ -107,9 +96,7 @@ class Migration(migrations.Migration):
 
 ### Note : `user_id` vs `user`
 
-On utilise `user_id=old_profile.user_id` au lieu de `user=old_profile.user` car :
-1. C'est plus performant (pas de requête supplémentaire pour charger l'objet User)
-2. On copie directement la clé étrangère
+On utilise `user_id=old_profile.user_id` au lieu de `user=old_profile.user` car c'est plus performant (pas de requête supplémentaire pour charger l'objet User).
 
 ## Étape 6 : Appliquer les migrations
 
@@ -159,10 +146,9 @@ Profile: 4 enregistrements
 
 1. Supprimer les anciens modèles de `oc_lettings_site/models.py`
 2. Créer les migrations pour supprimer les anciennes tables
-3. Supprimer le `related_name='profiles_profile'` temporaire
-4. Déplacer les vues et URLs vers les nouvelles applications
+3. Déplacer les vues et URLs vers les nouvelles applications
 
 ## Sources
 
-- [Migration Operations - Django Documentation](https://docs.djangoproject.com/en/5.2/ref/migration-operations/#runpython)
-- [ForeignKey.related_name - Django Documentation](https://docs.djangoproject.com/en/5.2/ref/models/fields/#django.db.models.ForeignKey.related_name)
+- [Migration Operations - Django Documentation](https://docs.djangoproject.com/fr/5.2/ref/migration-operations/#runpython)
+- [ForeignKey.related_name - Django Documentation](https://docs.djangoproject.com/fr/5.2/ref/models/fields/#django.db.models.ForeignKey.related_name)

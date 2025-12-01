@@ -182,24 +182,7 @@ operations = [
 python manage.py migrate
 ```
 
-## Étape 7 : Supprimer le related_name temporaire
-
-Dans `profiles/models.py`, on retire `related_name='profiles_profile'` :
-
-```python
-# Avant
-user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profiles_profile')
-
-# Après
-user = models.OneToOneField(User, on_delete=models.CASCADE)
-```
-
-```bash
-python manage.py makemigrations profiles
-python manage.py migrate
-```
-
-## Étape 8 : Supprimer les anciens templates
+## Étape 7 : Supprimer les anciens templates
 
 ```bash
 rm templates/lettings_index.html
@@ -208,7 +191,7 @@ rm templates/profiles_index.html
 rm templates/profile.html
 ```
 
-## Vérification finale
+## Étape 8 : Vérification finale
 
 ```bash
 python manage.py check
