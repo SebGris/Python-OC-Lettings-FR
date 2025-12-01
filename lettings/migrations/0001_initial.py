@@ -24,9 +24,6 @@ class Migration(migrations.Migration):
                 ('zip_code', models.PositiveIntegerField(validators=[django.core.validators.MaxValueValidator(99999)])),
                 ('country_iso_code', models.CharField(max_length=3, validators=[django.core.validators.MinLengthValidator(3)])),
             ],
-            options={
-                'verbose_name_plural': 'addresses',
-            },
         ),
         migrations.CreateModel(
             name='Letting',
