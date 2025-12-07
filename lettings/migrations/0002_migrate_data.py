@@ -26,6 +26,7 @@ def migrate_address_data(apps, _schema_editor):
     NewAddress = apps.get_model("lettings", "Address")
     for old_address in OldAddress.objects.iterator():
         NewAddress.objects.create(
+            # Preserve ID to maintain FK relationships with Letting
             id=old_address.id,
             number=old_address.number,
             street=old_address.street,
@@ -55,6 +56,7 @@ def migrate_letting_data(apps, _schema_editor):
     NewLetting = apps.get_model("lettings", "Letting")
     for old_letting in OldLetting.objects.all():
         NewLetting.objects.create(
+            # Preserve ID for data consistency
             id=old_letting.id,
             title=old_letting.title,
             address=old_letting.address_id,
