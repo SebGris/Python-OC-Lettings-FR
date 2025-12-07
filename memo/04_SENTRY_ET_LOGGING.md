@@ -30,12 +30,32 @@ Les variables d'environnement définies avec `set` (Windows) ou `export` (Linux)
 
 ### Étape 1 : Créer le fichier .env
 
-Créer un fichier `.env` à la racine du projet :
+Copier le fichier `.env.example` vers `.env` et remplir les valeurs :
+
+```bash
+cp .env.example .env
+```
+
+Contenu du fichier `.env` :
 
 ```
+# Django settings
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Sentry configuration
 SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 SENTRY_ENVIRONMENT=development
 ```
+
+| Variable | Description | Obligatoire |
+|----------|-------------|-------------|
+| `SECRET_KEY` | Clé secrète Django pour la cryptographie | Oui |
+| `DEBUG` | Mode debug (True/False) | Non (défaut: False) |
+| `ALLOWED_HOSTS` | Domaines autorisés, séparés par des virgules | Non (défaut: localhost,127.0.0.1) |
+| `SENTRY_DSN` | URL du projet Sentry | Non (Sentry désactivé si absent) |
+| `SENTRY_ENVIRONMENT` | Environnement Sentry (development/production) | Non (défaut: development) |
 
 ### Étape 2 : Ajouter .env au .gitignore
 
