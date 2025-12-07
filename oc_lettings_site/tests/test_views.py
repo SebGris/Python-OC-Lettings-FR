@@ -1,39 +1,32 @@
+"""
+Tests for the oc_lettings_site application views.
+
+This module contains integration tests for the main site views.
+"""
 import pytest
 from django.urls import reverse
 
 
 @pytest.mark.django_db
 class TestIndexView:
+    """Tests for the main site index view."""
+
     def test_index_status_code(self, client):
+        """
+        Test that the home page returns a 200 status code.
+
+        Args:
+            client: The Django test client.
+        """
         response = client.get(reverse("index"))
         assert response.status_code == 200
 
+    def test_index_template(self, client):
+        """
+        Test that the home page uses the correct template.
 
-@pytest.mark.django_db
-class TestLettingsIndexView:
-    def test_lettings_index_status_code(self, client):
-        response = client.get(reverse("lettings:index"))
-        assert response.status_code == 200
-
-
-@pytest.mark.django_db
-class TestLettingDetailView:
-    def test_letting_status_code(self, client, letting):
-        response = client.get(reverse("lettings:letting", args=[letting.id]))
-        assert response.status_code == 200
-
-
-@pytest.mark.django_db
-class TestProfilesIndexView:
-    def test_profiles_index_status_code(self, client):
-        response = client.get(reverse("profiles:index"))
-        assert response.status_code == 200
-
-
-@pytest.mark.django_db
-class TestProfileDetailView:
-    def test_profile_status_code(self, client, profile):
-        response = client.get(
-            reverse("profiles:profile", args=[profile.user.username])
-        )
-        assert response.status_code == 200
+        Args:
+            client: The Django test client.
+        """
+        response = client.get(reverse("index"))
+        assert "index.html" in [t.name for t in response.templates]
