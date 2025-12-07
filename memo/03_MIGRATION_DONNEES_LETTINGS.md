@@ -22,13 +22,14 @@ J'ai créé manuellement le fichier `lettings/migrations/0002_migrate_data.py` :
 from django.db import migrations
 
 
-def migrate_address_data(apps, schema_editor):
+def migrate_address_data(apps, _schema_editor):
     """Transfère les données de oc_lettings_site.Address vers lettings.Address"""
     OldAddress = apps.get_model('oc_lettings_site', 'Address')
     NewAddress = apps.get_model('lettings', 'Address')
 
-    for old_address in OldAddress.objects.all():
+    for old_address in OldAddress.objects.iterator():
         NewAddress.objects.create(
+            # Preserve ID to maintain FK relationships with Letting
             id=old_address.id,
             number=old_address.number,
             street=old_address.street,
@@ -39,29 +40,18 @@ def migrate_address_data(apps, schema_editor):
         )
 
 
-def migrate_letting_data(apps, schema_editor):
+def migrate_letting_data(apps, _schema_editor):
     """Transfère les données de oc_lettings_site.Letting vers lettings.Letting"""
     OldLetting = apps.get_model('oc_lettings_site', 'Letting')
     NewLetting = apps.get_model('lettings', 'Letting')
 
-    for old_letting in OldLetting.objects.all():
+    for old_letting in OldLetting.objects.iterator():
         NewLetting.objects.create(
+            # Preserve ID for data consistency
             id=old_letting.id,
             title=old_letting.title,
             address_id=old_letting.address_id,
         )
-
-
-def reverse_address_data(apps, schema_editor):
-    """Supprime les données de lettings.Address (pour rollback)"""
-    NewAddress = apps.get_model('lettings', 'Address')
-    NewAddress.objects.all().delete()
-
-
-def reverse_letting_data(apps, schema_editor):
-    """Supprime les données de lettings.Letting (pour rollback)"""
-    NewLetting = apps.get_model('lettings', 'Letting')
-    NewLetting.objects.all().delete()
 
 
 class Migration(migrations.Migration):
@@ -71,8 +61,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(migrate_address_data, reverse_address_data),
-        migrations.RunPython(migrate_letting_data, reverse_letting_data),
+        migrations.RunPython(migrate_address_data, migrations.RunPython.noop),
+        migrations.RunPython(migrate_letting_data, migrations.RunPython.noop),
     ]
 ```
 
@@ -327,9 +317,139 @@ print(f"Letting: {Letting.objects.count()} enregistrements")
 2. Supprimer les anciens modèles de `oc_lettings_site`
 3. Créer les migrations pour supprimer les anciennes tables
 
+## Méthodes de migration et performance
+
+### Comparaison des méthodes
+
+| Méthode | Avantages | Inconvénients |
+|---------|-----------|---------------|
+| **SQL direct (`RunSQL`)** | Très rapide, préserve les IDs | Dépend du SGBD |
+| **RunPython avec ID imposé** | Portable, lisible | Verbeux, risque séquence |
+| **RunPython avec mapping** | Pas d'ID imposé | Complexe, 2 passes |
+
+### 1. SQL direct (méthode la plus rapide)
+
+```python
+from django.db import migrations
+
+class Migration(migrations.Migration):
+    dependencies = [("lettings", "0001_initial")]
+
+    operations = [
+        migrations.RunSQL(
+            sql="""
+                INSERT INTO lettings_address
+                SELECT * FROM oc_lettings_site_address;
+
+                INSERT INTO lettings_letting
+                SELECT * FROM oc_lettings_site_letting;
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+    ]
+```
+
+**Avantages** :
+- Préserve automatiquement tous les IDs
+- Une seule opération SQL (très rapide)
+- Simple à comprendre
+
+### 2. Différence entre `all()` et `iterator()`
+
+| Méthode | Comportement | Mémoire | Usage |
+|---------|--------------|---------|-------|
+| `all()` | Charge tous les objets en mémoire d'un coup | Élevée | Petits volumes |
+| `iterator()` | Charge les objets un par un (streaming) | Faible | Gros volumes |
+
+```python
+# ❌ all() - charge 1 million d'objets en RAM
+for obj in Model.objects.all():
+    process(obj)
+
+# ✅ iterator() - charge un objet à la fois
+for obj in Model.objects.iterator():
+    process(obj)
+
+# ✅ iterator() avec chunk_size - charge par lots
+for obj in Model.objects.iterator(chunk_size=2000):
+    process(obj)
+```
+
+**Pourquoi utiliser `iterator()` ?**
+- `all()` met en cache tous les résultats dans le QuerySet
+- Avec 1 million de lignes, cela peut saturer la mémoire RAM
+- `iterator()` ne met pas en cache, il "streame" les résultats
+
+**Note** : `iterator()` ne résout pas le problème des INSERT multiples, il économise seulement la mémoire lors de la lecture.
+
+### 3. RunPython avec `bulk_create` (pour gros volumes)
+
+La méthode `objects.create()` en boucle est problématique pour les gros volumes car elle génère une requête INSERT par objet.
+
+```python
+# ❌ Problématique pour 1 million de lignes
+for old_address in OldAddress.objects.iterator():
+    NewAddress.objects.create(...)  # 1 million de requêtes INSERT !
+```
+
+**Solution avec `bulk_create`** :
+
+```python
+BATCH_SIZE = 10000
+
+def migrate_address_data(apps, _schema_editor):
+    OldAddress = apps.get_model("oc_lettings_site", "Address")
+    NewAddress = apps.get_model("lettings", "Address")
+
+    addresses_to_create = []
+    for old_address in OldAddress.objects.iterator(chunk_size=BATCH_SIZE):
+        addresses_to_create.append(NewAddress(
+            id=old_address.id,
+            number=old_address.number,
+            street=old_address.street,
+            city=old_address.city,
+            state=old_address.state,
+            zip_code=old_address.zip_code,
+            country_iso_code=old_address.country_iso_code,
+        ))
+
+        if len(addresses_to_create) >= BATCH_SIZE:
+            NewAddress.objects.bulk_create(addresses_to_create)
+            addresses_to_create = []
+
+    # Créer les derniers restants
+    if addresses_to_create:
+        NewAddress.objects.bulk_create(addresses_to_create)
+```
+
+### Performance estimée (1 million de lignes)
+
+| Méthode | Temps estimé |
+|---------|--------------|
+| `create()` en boucle | ~30-60 minutes |
+| `bulk_create` (batch 10k) | ~1-2 minutes |
+| SQL direct | ~quelques secondes |
+
+### Bonnes pratiques pour les fonctions reverse
+
+**Ne jamais utiliser `delete()` pour un reverse** :
+
+```python
+# ❌ DANGEREUX - supprime définitivement les données
+def reverse_address_data(apps, schema_editor):
+    NewAddress = apps.get_model("lettings", "Address")
+    NewAddress.objects.all().delete()
+
+# ✅ RECOMMANDÉ - indique que le reverse n'est pas supporté
+migrations.RunPython(migrate_address_data, migrations.RunPython.noop)
+```
+
+Utiliser `migrations.RunPython.noop` indique que la migration n'est pas réversible, ce qui est plus sûr que de supprimer les données.
+
 ## Sources
 
 - [Opérations de migration - Documentation Django](https://docs.djangoproject.com/fr/5.2/ref/migration-operations/)
 - [RunPython - Documentation Django](https://docs.djangoproject.com/fr/5.2/ref/migration-operations/#runpython)
 - [Écriture de migrations - Documentation Django](https://docs.djangoproject.com/fr/5.2/howto/writing-migrations/)
 - [Migration de données entre applications tierces - Documentation Django](https://docs.djangoproject.com/fr/5.2/howto/writing-migrations/#migrating-data-between-third-party-apps)
+- [bulk_create - Documentation Django](https://docs.djangoproject.com/fr/5.2/ref/models/querysets/#bulk-create)
