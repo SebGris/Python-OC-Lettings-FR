@@ -1,20 +1,30 @@
+"""
+Data migration for the lettings application.
+
+This module migrates Address and Letting data from the old oc_lettings_site
+models to the new lettings application models.
+"""
 from django.db import migrations
 
 
-def migrate_address_data(apps, schema_editor):
-    """Transfère les données de oc_lettings_site.Address vers lettings.Address.
+def migrate_address_data(apps, _schema_editor):
+    """
+    Transfer data from oc_lettings_site.Address to lettings.Address.
 
-    Cette migration a été exécutée lors de la refactorisation initiale.
-    Elle ne fait rien si les anciens modèles n'existent plus.
+    This migration was executed during the initial refactoring.
+    It does nothing if the old models no longer exist.
+
+    Args:
+        apps: The app registry.
+        schema_editor: The database schema editor.
     """
     try:
         OldAddress = apps.get_model("oc_lettings_site", "Address")
     except LookupError:
-        # Les anciens modèles n'existent plus, migration déjà effectuée
         return
 
     NewAddress = apps.get_model("lettings", "Address")
-    for old_address in OldAddress.objects.all():
+    for old_address in OldAddress.objects.iterator():
         NewAddress.objects.create(
             id=old_address.id,
             number=old_address.number,
@@ -26,16 +36,20 @@ def migrate_address_data(apps, schema_editor):
         )
 
 
-def migrate_letting_data(apps, schema_editor):
-    """Transfère les données de oc_lettings_site.Letting vers lettings.Letting.
+def migrate_letting_data(apps, _schema_editor):
+    """
+    Transfer data from oc_lettings_site.Letting to lettings.Letting.
 
-    Cette migration a été exécutée lors de la refactorisation initiale.
-    Elle ne fait rien si les anciens modèles n'existent plus.
+    This migration was executed during the initial refactoring.
+    It does nothing if the old models no longer exist.
+
+    Args:
+        apps: The app registry.
+        schema_editor: The database schema editor.
     """
     try:
         OldLetting = apps.get_model("oc_lettings_site", "Letting")
     except LookupError:
-        # Les anciens modèles n'existent plus, migration déjà effectuée
         return
 
     NewLetting = apps.get_model("lettings", "Letting")
@@ -47,25 +61,14 @@ def migrate_letting_data(apps, schema_editor):
         )
 
 
-def reverse_address_data(apps, schema_editor):
-    """Supprime les données de lettings.Address (pour rollback)"""
-    NewAddress = apps.get_model("lettings", "Address")
-    NewAddress.objects.all().delete()
-
-
-def reverse_letting_data(apps, schema_editor):
-    """Supprime les données de lettings.Letting (pour rollback)"""
-    NewLetting = apps.get_model("lettings", "Letting")
-    NewLetting.objects.all().delete()
-
-
 class Migration(migrations.Migration):
+    """Migration to transfer data from oc_lettings_site to lettings app."""
 
     dependencies = [
         ("lettings", "0001_initial"),
     ]
 
     operations = [
-        migrations.RunPython(migrate_address_data, reverse_address_data),
-        migrations.RunPython(migrate_letting_data, reverse_letting_data),
+        migrations.RunPython(migrate_address_data, migrations.RunPython.noop),
+        migrations.RunPython(migrate_letting_data, migrations.RunPython.noop),
     ]
