@@ -4,3 +4,5 @@ venv
 .claude/
 .coverage
 htmlcov/
+.env
+debug.log
