@@ -1,8 +1,21 @@
+"""
+Django management script for the Orange County Lettings project.
+
+This module provides the command-line utility for administrative tasks
+such as running the development server, creating migrations, and managing
+the database.
+"""
 import os
 import sys
 
 
 def main():
+    """
+    Run administrative tasks.
+
+    Sets the Django settings module and executes the command-line utility.
+    Raises ImportError if Django is not installed or not available.
+    """
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oc_lettings_site.settings')
     try:
         from django.core.management import execute_from_command_line

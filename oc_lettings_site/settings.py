@@ -1,3 +1,10 @@
+"""
+Django settings for the Orange County Lettings project.
+
+This module contains all configuration settings for the Django application,
+including database configuration, installed apps, middleware, templates,
+static files, and internationalization settings.
+"""
 import os
 
 from pathlib import Path

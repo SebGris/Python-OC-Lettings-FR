@@ -1,3 +1,9 @@
+"""
+ASGI configuration for the Orange County Lettings project.
+
+This module exposes the ASGI callable as a module-level variable named 'application'.
+It is used for deploying the application with ASGI-compatible servers.
+"""
 import os
 
 from django.core.asgi import get_asgi_application
