@@ -436,8 +436,67 @@ logger.critical("Database connection lost")
     └─────────┘    └──────────┘    └──────────┘
 ```
 
-## Sources
+## 9. Sources et références
 
-- [Sentry Django Documentation](https://docs.sentry.io/platforms/python/integrations/django/)
-- [Django Logging Documentation](https://docs.djangoproject.com/en/4.2/topics/logging/)
-- [Python Logging HOWTO](https://docs.python.org/3/howto/logging.html)
+### Installation et configuration de Sentry
+
+| Code | Source |
+|------|--------|
+| `pip install sentry-sdk` | [Sentry Python Installation](https://docs.sentry.io/platforms/python/) |
+| `sentry_sdk.init(dsn=...)` | [Sentry Django Configuration](https://docs.sentry.io/platforms/python/integrations/django/) |
+| `traces_sample_rate=1.0` | [Sentry Performance Monitoring](https://docs.sentry.io/platforms/python/tracing/) |
+| `profiles_sample_rate=1.0` | [Sentry Profiling](https://docs.sentry.io/platforms/python/profiling/) |
+| `send_default_pii=True` | [Sentry Data Management](https://docs.sentry.io/platforms/python/data-management/sensitive-data/) |
+| `environment="development"` | [Sentry Environments](https://docs.sentry.io/platforms/python/configuration/environments/) |
+
+### Configuration de python-dotenv
+
+| Code | Source |
+|------|--------|
+| `pip install python-dotenv` | [python-dotenv PyPI](https://pypi.org/project/python-dotenv/) |
+| `load_dotenv()` | [python-dotenv Documentation](https://saurabh-kumar.com/python-dotenv/) |
+| Fichier `.env` | [12 Factor App - Config](https://12factor.net/config) |
+
+### Configuration du Logging Django
+
+| Code | Source |
+|------|--------|
+| `LOGGING = {...}` | [Django Logging Configuration](https://docs.djangoproject.com/en/4.2/topics/logging/#configuring-logging) |
+| `"version": 1` | [Python dictConfig format](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema) |
+| `"formatters": {...}` | [Django Logging Formatters](https://docs.djangoproject.com/en/4.2/topics/logging/#formatters) |
+| `"handlers": {...}` | [Django Logging Handlers](https://docs.djangoproject.com/en/4.2/topics/logging/#handlers) |
+| `"loggers": {...}` | [Django Logging Loggers](https://docs.djangoproject.com/en/4.2/topics/logging/#loggers) |
+| `logging.StreamHandler` | [Python StreamHandler](https://docs.python.org/3/library/logging.handlers.html#streamhandler) |
+| `logging.FileHandler` | [Python FileHandler](https://docs.python.org/3/library/logging.handlers.html#filehandler) |
+
+### Utilisation du logging dans les vues
+
+| Code | Source |
+|------|--------|
+| `import logging` | [Python Logging Module](https://docs.python.org/3/library/logging.html) |
+| `logger = logging.getLogger(__name__)` | [Python Logging HOWTO](https://docs.python.org/3/howto/logging.html#logging-from-multiple-modules) |
+| `logger.info(...)`, `logger.debug(...)` | [Python Logging Levels](https://docs.python.org/3/howto/logging.html#logging-levels) |
+| `logger.error(...)` | [Python Logging Tutorial](https://docs.python.org/3/howto/logging.html#a-simple-example) |
+
+### Gestion des erreurs 404
+
+| Code | Source |
+|------|--------|
+| `from django.http import Http404` | [Django Http404](https://docs.djangoproject.com/en/4.2/topics/http/views/#django.http.Http404) |
+| `raise Http404(...)` | [Django Returning Errors](https://docs.djangoproject.com/en/4.2/topics/http/views/#returning-errors) |
+| `Model.DoesNotExist` | [Django DoesNotExist Exception](https://docs.djangoproject.com/en/4.2/ref/models/class/#django.db.models.Model.DoesNotExist) |
+
+### Bonnes pratiques
+
+| Concept | Source |
+|---------|--------|
+| Format `%s` vs f-strings | [Python Logging Performance](https://docs.python.org/3/howto/logging.html#optimization) |
+| Ne pas logger de données sensibles | [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) |
+| Niveaux de log | [Python Logging Levels](https://docs.python.org/3/howto/logging.html#when-to-use-logging) |
+
+### Tutoriels complémentaires
+
+- [Real Python - Logging in Python](https://realpython.com/python-logging/)
+- [Real Python - Python dotenv](https://realpython.com/python-dotenv/)
+- [Django Girls - Deploying with Environment Variables](https://tutorial-extensions.djangogirls.org/en/heroku/)
+- [TestDriven.io - Django Logging](https://testdriven.io/blog/django-logging/)
