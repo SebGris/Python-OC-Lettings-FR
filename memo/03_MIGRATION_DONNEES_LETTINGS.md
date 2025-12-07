@@ -376,9 +376,9 @@ for obj in Model.objects.iterator(chunk_size=2000):
 ```
 
 **Pourquoi utiliser `iterator()` ?**
-- `all()` met en cache tous les résultats dans le QuerySet
+- `all()` charge tous les objets en mémoire et les garde en cache pour les réutiliser
 - Avec 1 million de lignes, cela peut saturer la mémoire RAM
-- `iterator()` ne met pas en cache, il "streame" les résultats
+- `iterator()` lit les résultats un par un depuis la base de données, sans les stocker en mémoire
 
 **Note** : `iterator()` ne résout pas le problème des INSERT multiples, il économise seulement la mémoire lors de la lecture.
 
