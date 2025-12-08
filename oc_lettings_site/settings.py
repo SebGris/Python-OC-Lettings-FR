@@ -5,6 +5,7 @@ This module contains all configuration settings for the Django application,
 including database configuration, installed apps, middleware, templates,
 static files, and internationalization settings.
 """
+
 import os
 
 import sentry_sdk
@@ -27,9 +28,15 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 
+# DEBUG = False # Required to display custom 404.html and 500.html pages
+
 # ALLOWED_HOSTS must be explicitly set in production
 # In DEBUG mode, allow localhost for convenience
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else []
+ALLOWED_HOSTS = (
+    os.environ.get("ALLOWED_HOSTS", "").split(",")
+    if os.environ.get("ALLOWED_HOSTS")
+    else []
+)
 if DEBUG:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -159,10 +166,6 @@ LOGGING = {
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
             "style": "{",
         },
     },
