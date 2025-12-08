@@ -27,7 +27,11 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+# ALLOWED_HOSTS must be explicitly set in production
+# In DEBUG mode, allow localhost for convenience
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else []
+if DEBUG:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -143,6 +147,8 @@ if SENTRY_DSN:
         send_default_pii=True,
         # Environment tag
         environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
+        # Enable sending Python logs to Sentry
+        enable_logs=True,
     )
 
 

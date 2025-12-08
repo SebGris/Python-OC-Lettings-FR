@@ -100,6 +100,7 @@ if SENTRY_DSN:
         profiles_sample_rate=1.0,
         send_default_pii=True,
         environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
+        enable_logs=True,
     )
 ```
 
@@ -112,6 +113,7 @@ if SENTRY_DSN:
 | `profiles_sample_rate` | `1.0` (100%) | Pourcentage de transactions à profiler (analyse détaillée) |
 | `send_default_pii` | `True` | Envoie les informations utilisateur (IP, email) - mettre à `False` en production si nécessaire |
 | `environment` | `"development"` | Tag pour distinguer les environnements (development, staging, production) |
+| `enable_logs` | `True` | Envoie automatiquement les logs Python vers Sentry |
 
 ### Pourquoi utiliser une variable d'environnement ?
 
