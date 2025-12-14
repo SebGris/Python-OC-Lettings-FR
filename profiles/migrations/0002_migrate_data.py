@@ -8,13 +8,13 @@ def migrate_profile_data(apps, schema_editor):
     Elle ne fait rien si les anciens modèles n'existent plus.
     """
     try:
-        OldProfile = apps.get_model('oc_lettings_site', 'Profile')
+        OldProfile = apps.get_model("oc_lettings_site", "Profile")
     except LookupError:
         # Les anciens modèles n'existent plus, migration déjà effectuée
         return
 
-    NewProfile = apps.get_model('profiles', 'Profile')
-    for old_profile in OldProfile.objects.all():
+    NewProfile = apps.get_model("profiles", "Profile")
+    for old_profile in OldProfile.objects.iterator():
         NewProfile.objects.create(
             id=old_profile.id,
             user_id=old_profile.user_id,
@@ -22,18 +22,12 @@ def migrate_profile_data(apps, schema_editor):
         )
 
 
-def reverse_profile_data(apps, schema_editor):
-    """Supprime les données de profiles.Profile (pour rollback)"""
-    NewProfile = apps.get_model('profiles', 'Profile')
-    NewProfile.objects.all().delete()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profiles', '0001_initial'),
+        ("profiles", "0001_initial"),
     ]
 
     operations = [
-        migrations.RunPython(migrate_profile_data, reverse_profile_data),
+        migrations.RunPython(migrate_profile_data, migrations.RunPython.noop),
     ]
