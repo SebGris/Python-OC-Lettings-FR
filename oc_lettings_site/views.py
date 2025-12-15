@@ -1,8 +1,9 @@
 """
-Views for the Orange County Lettings main application.
+Views for the OC Lettings main application.
 
 This module contains the view functions for the main site pages.
 """
+
 import logging
 
 from django.shortcuts import render
@@ -21,4 +22,4 @@ def index(request):
         HttpResponse: The rendered home page template.
     """
     logger.info("Home page accessed")
-    return render(request, 'index.html')
+    return render(request, "index.html")

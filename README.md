@@ -1,6 +1,6 @@
 ## Résumé
 
-Site web d'Orange County Lettings
+Site web d'OC Lettings
 
 ## Développement local
 

@@ -1,9 +1,10 @@
 """
-URL configuration for the Orange County Lettings project.
+URL configuration for the OC Lettings project.
 
 This module defines the URL patterns for the main application,
 including routes to the home page, lettings, profiles, and admin interface.
 """
+
 from django.contrib import admin
 from django.urls import path, include
 

@@ -1,5 +1,5 @@
 """
-Django settings for the Orange County Lettings project.
+Django settings for the OC Lettings project.
 
 This module contains all configuration settings for the Django application,
 including database configuration, installed apps, middleware, templates,
@@ -57,6 +57,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise pour servir les fichiers statiques en production
+    # Doit être placé juste après SecurityMiddleware
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -137,6 +140,23 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+# WhiteNoise configuration pour servir les fichiers statiques en production
+# En production (DEBUG=False): utilise CompressedManifestStaticFilesStorage
+# qui compresse et ajoute un hash aux fichiers pour le cache busting
+# En développement (DEBUG=True): utilise le backend par défaut
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        ),
+    },
+}
 
 
 # Sentry configuration
