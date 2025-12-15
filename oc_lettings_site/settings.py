@@ -142,19 +142,14 @@ STATICFILES_DIRS = [
 ]
 
 # WhiteNoise configuration pour servir les fichiers statiques en production
-# En production (DEBUG=False): utilise CompressedManifestStaticFilesStorage
-# qui compresse et ajoute un hash aux fichiers pour le cache busting
-# En développement (DEBUG=True): utilise le backend par défaut
+# CompressedStaticFilesStorage compresse les fichiers (gzip, brotli) sans manifest
+# Cela évite les erreurs de fichiers manquants référencés dans le CSS du template
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": (
-            "whitenoise.storage.CompressedManifestStaticFilesStorage"
-            if not DEBUG
-            else "django.contrib.staticfiles.storage.StaticFilesStorage"
-        ),
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
@@ -180,6 +175,8 @@ if SENTRY_DSN:
 
 
 # Logging configuration
+# In production (Docker), we only log to console (stdout/stderr)
+# In development, we also log to a file
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -194,11 +191,6 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "debug.log",
-            "formatter": "verbose",
-        },
     },
     "root": {
         "handlers": ["console"],
@@ -211,17 +203,17 @@ LOGGING = {
             "propagate": False,
         },
         "oc_lettings_site": {
-            "handlers": ["console", "file"],
+            "handlers": ["console"],
             "level": "DEBUG",
             "propagate": False,
         },
         "lettings": {
-            "handlers": ["console", "file"],
+            "handlers": ["console"],
             "level": "DEBUG",
             "propagate": False,
         },
         "profiles": {
-            "handlers": ["console", "file"],
+            "handlers": ["console"],
             "level": "DEBUG",
             "propagate": False,
         },
