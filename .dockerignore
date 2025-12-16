@@ -54,8 +54,9 @@ dist/
 *.log
 debug.log
 
-# Base de données SQLite (sera montée en volume ou recréée)
-*.sqlite3
+# Base de données SQLite
+# Note: On inclut la base SQLite pour la production (données de démonstration)
+# En production réelle, utiliser PostgreSQL ou un autre SGBD externe
 
 # Fichiers statiques collectés (seront recréés lors du build)
 staticfiles/
