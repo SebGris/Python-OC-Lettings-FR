@@ -375,6 +375,35 @@ services:
 - `retries` : Nombre de tentatives avant de marquer comme "unhealthy" (3)
 - `start_period` : Délai avant la première vérification (10 secondes)
 
+### Lancer sans Docker Compose (avec docker run)
+
+Si vous ne souhaitez pas utiliser `docker-compose.yml`, vous pouvez lancer l'image directement avec `docker run` :
+
+```bash
+docker run -d -p 8000:8000 --name oc-lettings-app -e SECRET_KEY=votre-cle-secrete -e DEBUG=False -e ALLOWED_HOSTS=localhost,127.0.0.1 sebgris/oc-lettings:latest
+# Ajoutez l'option -v pour monter un volume
+docker run -d -p 8000:8000 --name oc-lettings-app -e SECRET_KEY=votre-cle-secrete -e DEBUG=False -e ALLOWED_HOSTS=localhost,127.0.0.1 -v ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3 sebgris/oc-lettings:latest
+```
+
+**Explication des options :**
+
+| Option | Explication |
+|--------|-------------|
+| `-d` | Mode détaché (arrière-plan) |
+| `-p 8000:8000` | Mapping port hôte:conteneur |
+| `--name oc-lettings-app` | Nom du conteneur |
+| `-e SECRET_KEY=...` | Variable d'environnement |
+| `sebgris/oc-lettings:latest` | Nom de l'image à lancer |
+
+**Différence entre docker-compose et docker run :**
+
+| docker-compose | docker run |
+|----------------|------------|
+| Lit les variables depuis `.env` automatiquement | Variables passées en `-e` manuellement |
+| Configure volumes, healthcheck, restart | Tout doit être ajouté manuellement |
+| `docker-compose up --build` | `docker build` + `docker run` séparément |
+| Plus simple pour le développement | Plus de contrôle, mais plus verbeux |
+
 ---
 
 ## 5. Commandes essentielles
