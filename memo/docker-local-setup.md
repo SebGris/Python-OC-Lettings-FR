@@ -6,9 +6,9 @@
 3. [Configurer les variables d'environnement](#3-configurer-les-variables-denvironnement)
 4. [Comprendre le flux de la SECRET_KEY](#4-comprendre-le-flux-de-la-secret_key)
 5. [Construire et lancer l'image Docker](#5-construire-et-lancer-limage-docker)
-6. [Commandes utiles](#6-commandes-utiles)
-7. [Dépannage](#7-dépannage)
-8. [Pusher l'image sur Docker Hub](#8-pusher-limage-sur-docker-hub)
+6. [Dépannage](#6-dépannage)
+
+> **Commandes Docker** : Voir [docker-commands.md](docker-commands.md) pour la référence complète des commandes.
 
 ---
 
@@ -244,87 +244,7 @@ Ouvrez votre navigateur : **http://localhost:8000**
 
 ---
 
-## 6. Commandes utiles
-
-### Gestion des conteneurs
-
-```bash
-# Voir les conteneurs en cours d'exécution
-docker ps
-
-# Voir tous les conteneurs (y compris arrêtés)
-docker ps -a
-
-# Arrêter un conteneur
-docker stop oc-lettings-app
-
-# Démarrer un conteneur arrêté
-docker start oc-lettings-app
-
-# Supprimer un conteneur
-docker rm oc-lettings-app
-
-# Forcer la suppression d'un conteneur en cours
-docker rm -f oc-lettings-app
-```
-
-### Logs et débogage
-
-```bash
-# Voir les logs du conteneur
-docker logs oc-lettings-app
-
-# Suivre les logs en temps réel
-docker logs -f oc-lettings-app
-
-# Entrer dans le conteneur (shell)
-docker exec -it oc-lettings-app bash
-```
-
-### Gestion des images
-
-```bash
-# Lister les images
-docker images
-
-# Supprimer une image
-docker rmi oc-lettings
-
-# Supprimer les images non utilisées
-docker image prune
-
-# Pour un nettoyage complet
-docker image prune -a
-```
-
-### Docker Compose
-
-```bash
-# Lancer les services
-docker-compose up
-
-# Lancer en arrière-plan
-docker-compose up -d
-
-# Reconstruire et lancer
-docker-compose up --build
-
-# Arrêter les services
-docker-compose down
-
-# Voir les logs
-docker-compose logs -f
-
-# Reconstruire sans cache
-docker-compose build --no-cache
-
-# Arrête, supprime les conteneurs ET les volumes
-docker-compose down -v
-```
-
----
-
-## 7. Dépannage
+## 6. Dépannage
 
 ### Erreur : "Docker daemon is not running"
 
@@ -396,72 +316,12 @@ Vérifiez que le fichier `oc-lettings-site.sqlite3` existe à la racine du proje
 
 ---
 
-## 8. Pusher l'image sur Docker Hub
-
-### Prérequis
-
-1. Créer un compte Docker Hub : https://hub.docker.com
-2. Se connecter depuis le terminal
-
-### Étapes
-
-```bash
-# 1. Se connecter à Docker Hub
-docker login
-
-# 2. Construire l'image avec votre username Docker Hub
-docker build -t VOTRE_USERNAME/oc-lettings:latest .
-
-# 3. Pusher l'image vers Docker Hub
-docker push VOTRE_USERNAME/oc-lettings:latest
-```
-
-### Exemple concret
-
-Si votre username Docker Hub est `sebgris` :
-
-```bash
-docker login
-docker build -t sebgris/oc-lettings:latest .
-docker push sebgris/oc-lettings:latest
-https://python-oc-lettings-fr-vu8j.onrender.com
-https://dashboard.render.com/web/srv-d50jl275r7bs739gbd60
-```
-
-### Vérification
-
-Après le push, votre image sera visible sur :
-`https://hub.docker.com/r/sebgris/oc-lettings`
-
-### Tags multiples
-
-Vous pouvez aussi tagger avec le hash du commit :
-
-```bash
-# Récupérer le hash court du dernier commit
-git rev-parse --short HEAD
-# Exemple de résultat : a4aa10a
-
-# Construire et tagger avec le hash
-docker build -t sebgris/oc-lettings:a4aa10a -t sebgris/oc-lettings:latest .
-
-# Pusher les deux tags
-docker push sebgris/oc-lettings:a4aa10a
-docker push sebgris/oc-lettings:latest
-```
-
----
-
 ## Résumé rapide
 
-```bash
-# 1. Créer/modifier le fichier .env avec votre SECRET_KEY
-# 2. Lancer Docker Desktop
-# 3. Construire et lancer :
-docker-compose up --build
+1. Créer/modifier le fichier `.env` avec votre SECRET_KEY
+2. Lancer Docker Desktop
+3. Construire et lancer : `docker-compose up --build`
+4. Ouvrir http://localhost:8000
+5. Pour arrêter : `docker-compose down`
 
-# 4. Ouvrir http://localhost:8000
-
-# 5. Pour arrêter :
-docker-compose down
-```
+> Pour les commandes détaillées (push Docker Hub, nettoyage, etc.), voir [docker-commands.md](docker-commands.md)

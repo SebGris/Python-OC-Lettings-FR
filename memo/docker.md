@@ -5,8 +5,9 @@
 2. [Concepts clés](#2-concepts-clés)
 3. [Notre Dockerfile expliqué](#3-notre-dockerfile-expliqué)
 4. [Docker Compose](#4-docker-compose)
-5. [Commandes essentielles](#5-commandes-essentielles)
-6. [Bonnes pratiques appliquées](#6-bonnes-pratiques-appliquées)
+5. [Bonnes pratiques appliquées](#5-bonnes-pratiques-appliquées)
+
+> **Commandes Docker** : Voir [docker-commands.md](docker-commands.md) pour la référence complète des commandes.
 
 ---
 
@@ -53,24 +54,8 @@ Une **image** est un template en lecture seule qui contient :
 - Les variables d'environnement
 - La commande de démarrage
 
-```bash
-# Lister les images locales
-docker images
-
-# Télécharger une image depuis Docker Hub
-docker pull python:3.13-slim
-```
-
 ### Conteneur
 Un **conteneur** est une instance en cours d'exécution d'une image.
-
-```bash
-# Lister les conteneurs en cours d'exécution
-docker ps
-
-# Lister tous les conteneurs (y compris arrêtés)
-docker ps -a
-```
 
 ### Dockerfile
 Un **Dockerfile** est un fichier texte contenant les instructions pour construire une image.
@@ -406,86 +391,7 @@ docker run -d -p 8000:8000 --name oc-lettings-app -e SECRET_KEY=votre-cle-secret
 
 ---
 
-## 5. Commandes essentielles
-
-### Construction d'image
-```bash
-# Construire l'image
-docker build -t oc-lettings .
-
-# Construire avec un tag spécifique
-docker build -t username/oc-lettings:v1.0 .
-
-# Construire sans cache (rebuild complet)
-docker build --no-cache -t oc-lettings .
-```
-
-### Gestion des conteneurs
-```bash
-# Lancer un conteneur
-docker run -d -p 8000:8000 --name oc-lettings-app oc-lettings
-
-# Voir les logs
-docker logs oc-lettings-app
-
-# Suivre les logs en temps réel
-docker logs -f oc-lettings-app
-
-# Entrer dans un conteneur en cours d'exécution
-docker exec -it oc-lettings-app bash
-
-# Arrêter un conteneur
-docker stop oc-lettings-app
-
-# Supprimer un conteneur
-docker rm oc-lettings-app
-```
-
-### Docker Compose
-```bash
-# Lancer tous les services
-docker-compose up
-
-# Lancer en arrière-plan
-docker-compose up -d
-
-# Reconstruire et lancer
-docker-compose up --build
-
-# Arrêter tous les services
-docker-compose down
-
-# Voir les logs
-docker-compose logs -f
-```
-
-### Docker Hub
-```bash
-# Se connecter à Docker Hub
-docker login
-
-# Pousser une image
-docker push username/oc-lettings:latest
-
-# Télécharger une image
-docker pull username/oc-lettings:latest
-```
-
-### Nettoyage
-```bash
-# Supprimer les conteneurs arrêtés
-docker container prune
-
-# Supprimer les images non utilisées
-docker image prune
-
-# Nettoyage complet (attention!)
-docker system prune -a
-```
-
----
-
-## 6. Bonnes pratiques appliquées
+## 5. Bonnes pratiques appliquées
 
 ### 1. Multi-stage build
 **Pourquoi ?** Réduit la taille de l'image finale en ne gardant que le nécessaire.
@@ -548,30 +454,4 @@ healthcheck:
   interval: 30s
   timeout: 10s
   retries: 3
-```
-
----
-
-## Résumé des commandes pour ce projet
-
-```bash
-# 1. Construire l'image localement
-docker build -t oc-lettings .
-
-# 2. Lancer avec Docker Compose
-docker-compose up -d
-
-# 3. Vérifier que ça fonctionne
-curl http://localhost:8000
-
-# 4. Voir les logs
-docker-compose logs -f
-
-# 5. Arrêter
-docker-compose down
-
-# 6. Pousser sur Docker Hub
-docker login
-docker tag oc-lettings username/oc-lettings:latest
-docker push username/oc-lettings:latest
 ```

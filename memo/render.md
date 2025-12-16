@@ -204,13 +204,7 @@ Render va :
 
 ### Générer une SECRET_KEY sécurisée
 
-```bash
-# Méthode Python
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-
-# Méthode alternative
-python -c "import secrets; print(secrets.token_urlsafe(50))"
-```
+> Voir [docker-local-setup.md](docker-local-setup.md#2-générer-une-secret_key) pour les méthodes de génération.
 
 ### Différence Local vs Production
 
@@ -367,10 +361,8 @@ deploy:
 3. Image Docker Hub non accessible
 
 **Vérifications** :
-```bash
-# Tester le webhook manuellement
-curl -X POST "https://api.render.com/deploy/srv-xxx?key=yyy"
-```
+- Tester le webhook manuellement avec `curl -X POST "VOTRE_URL_WEBHOOK"`
+- Vérifier les logs Render après le déclenchement
 
 ---
 
@@ -386,12 +378,10 @@ curl -X POST "https://api.render.com/deploy/srv-xxx?key=yyy"
 
 ## Résumé des étapes
 
-```bash
-# 1. Créer un compte Render
-# 2. Créer un Web Service "Deploy from Docker Registry"
-# 3. Image URL : docker.io/sebgris/oc-lettings:latest
-# 4. Configurer les variables d'environnement
-# 5. Copier le Deploy Hook URL
-# 6. Ajouter le Deploy Hook comme secret GitHub
-# 7. Pousser du code pour déclencher le déploiement
-```
+1. Créer un compte Render
+2. Créer un Web Service "Deploy from Docker Registry"
+3. Image URL : `docker.io/sebgris/oc-lettings:latest`
+4. Configurer les variables d'environnement
+5. Copier le Deploy Hook URL
+6. Ajouter le Deploy Hook comme secret GitHub
+7. Pousser du code pour déclencher le déploiement
