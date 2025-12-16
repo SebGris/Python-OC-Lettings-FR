@@ -1,0 +1,50 @@
+# =============================================================================
+# docker-compose.yml - Configuration pour le développement local
+# =============================================================================
+# Ce fichier permet de lancer l'application avec Docker Compose.
+# Il est idéal pour tester l'image Docker localement avant le déploiement.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Service principal : Application Django
+  # ---------------------------------------------------------------------------
+  web:
+    # Construire l'image à partir du Dockerfile local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+
+    # Nom du conteneur pour faciliter l'identification
+    container_name: oc-lettings-web
+
+    # Mapping des ports : port_hôte:port_conteneur
+    ports:
+      - "8000:8000"
+
+    # Variables d'environnement pour l'application
+    # En production, ces valeurs viennent de secrets ou variables CI/CD
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-development}
+      - PORT=8000
+
+    # Volumes pour persister les données
+    volumes:
+      # Monter la base de données SQLite pour la persistance
+      - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
+
+    # Politique de redémarrage
+    restart: unless-stopped
+
+    # Healthcheck pour vérifier que l'application fonctionne
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

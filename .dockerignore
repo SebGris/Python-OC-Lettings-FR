@@ -1,0 +1,80 @@
+# =============================================================================
+# .dockerignore - Fichiers à exclure lors du build Docker
+# =============================================================================
+# Ce fichier fonctionne comme .gitignore mais pour Docker.
+# Il permet d'optimiser le build en excluant les fichiers inutiles.
+# =============================================================================
+
+# Environnements virtuels Python (contiennent les packages installés localement)
+venv/
+env/
+.venv/
+.env/
+
+# Cache Python (fichiers compilés)
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+
+# Fichiers de couverture de tests
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Fichiers d'environnement (contiennent des secrets!)
+.env
+.env.local
+.env.*.local
+
+# Fichiers IDE et éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation et fichiers markdown
+*.md
+doc/
+memo/
+
+# Fichiers de build
+build/
+dist/
+*.egg-info/
+
+# Fichiers de logs
+*.log
+debug.log
+
+# Base de données SQLite (sera montée en volume ou recréée)
+*.sqlite3
+
+# Fichiers statiques collectés (seront recréés lors du build)
+staticfiles/
+
+# Fichiers de test
+tests/
+**/tests/
+conftest.py
+
+# Fichiers Docker (pas besoin de les inclure dans l'image)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Fichiers CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Fichiers divers
+Makefile
+setup.cfg
