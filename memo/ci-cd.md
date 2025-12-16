@@ -296,35 +296,11 @@ Dans GitHub → Settings → Secrets and variables → Actions :
 
 ## 5. Déploiement sur Render
 
-### Pourquoi Render ?
-- Gratuit pour les projets personnels
-- Supporte Docker
-- Déploiement simple via webhook
-- SSL automatique
+> **Documentation complète** : Voir [render.md](render.md) pour les explications détaillées sur Render.
 
-### Configuration du service Render
+### Résumé rapide
 
-1. **Créer un compte** sur https://render.com
-
-2. **Nouveau Web Service** → "Deploy from Docker Registry"
-
-3. **Configuration** :
-   ```
-   Image URL: docker.io/votre-username/oc-lettings:latest
-   ```
-
-4. **Variables d'environnement** (à configurer dans Render) :
-   ```
-   SECRET_KEY=votre-cle-secrete-production
-   DEBUG=False
-   ALLOWED_HOSTS=votre-app.onrender.com
-   SENTRY_DSN=https://xxx@sentry.io/xxx
-   SENTRY_ENVIRONMENT=production
-   ```
-
-5. **Désactiver le déploiement automatique** :
-   - Settings → Build & Deploy → Auto-Deploy → No
-   - (On utilise le webhook GitHub Actions à la place)
+**Render** est une plateforme PaaS gratuite qui héberge notre application Django via Docker.
 
 ### Flux de déploiement
 
@@ -348,6 +324,13 @@ Developer                GitHub Actions              Docker Hub              Ren
     │◀──────────────────────────────────────────────────────────────────────────│
     │                                App déployée et accessible !              │
 ```
+
+### Configuration minimale
+
+1. Créer un Web Service sur Render
+2. Image URL : `docker.io/sebgris/oc-lettings:latest`
+3. Configurer les variables d'environnement (voir [render.md](render.md#5-configuration-des-variables-denvironnement))
+4. Copier le Deploy Hook et l'ajouter comme secret GitHub
 
 ---
 
@@ -414,12 +397,14 @@ RENDER_DEPLOY_HOOK_URL = https://api.render.com/deploy/...
 ```
 
 ### 3. Configurer Render
+
+> Voir [render.md](render.md) pour les instructions détaillées.
+
 ```
 1. Créer un Web Service depuis Docker Registry
 2. Image: docker.io/username/oc-lettings:latest
 3. Configurer les variables d'environnement
-4. Désactiver l'auto-deploy
-5. Copier le Deploy Hook URL
+4. Copier le Deploy Hook URL
 ```
 
 ### 4. Tester le pipeline
