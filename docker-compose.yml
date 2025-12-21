@@ -34,9 +34,11 @@ services:
       - PORT=8000
 
     # Volumes pour persister les données
-    volumes:
-      # Monter la base de données SQLite pour la persistance
-      - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
+    # Note: Sur Windows, les permissions de fichiers montés peuvent poser problème.
+    # Pour le développement local, on utilise la base de données incluse dans l'image.
+    # Décommentez la ligne ci-dessous si vous avez besoin de persister les données :
+    # volumes:
+    #   - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
 
     # Politique de redémarrage
     restart: unless-stopped

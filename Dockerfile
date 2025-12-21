@@ -59,20 +59,25 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Créer un utilisateur non-root pour la sécurité
 # (ne jamais exécuter une app en tant que root en production)
-RUN useradd --create-home --shell /bin/bash appuser
+# On utilise un UID fixe (1000) pour faciliter les permissions avec les volumes
+RUN useradd --create-home --shell /bin/bash --uid 1000 appuser
 
 # Copier les packages Python installés depuis le stage builder
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copier le code source de l'application
-COPY --chown=appuser:appuser . .
+COPY . .
 
 # Collecter les fichiers statiques pour la production
 # Cette commande copie tous les fichiers statiques dans STATIC_ROOT
 # On utilise DEBUG=True temporairement pour éviter les erreurs de WhiteNoise
 # sur les fichiers CSS référençant des assets manquants (fonts, images du template)
 RUN DEBUG=True python manage.py collectstatic --noinput
+
+# Donner les permissions à appuser sur tout le répertoire /app
+# Ceci inclut la base de données SQLite et les fichiers statiques
+RUN chown -R appuser:appuser /app
 
 # Changer vers l'utilisateur non-root
 USER appuser
