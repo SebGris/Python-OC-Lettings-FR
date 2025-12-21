@@ -8,6 +8,8 @@
 5. [Déploiement sur Render](#5-déploiement-sur-render)
 6. [Dépannage](#6-dépannage)
 
+> **Note** : Ce projet utilise **Poetry** pour la gestion des dépendances Python.
+
 ---
 
 ## 1. Introduction au CI/CD
@@ -151,34 +153,50 @@ test:
   uses: actions/setup-python@v5
   with:
     python-version: '3.13'
-    cache: 'pip'
 ```
-**Setup Python** :
-- Installe Python 3.13
-- `cache: 'pip'` : Met en cache les packages pip pour accélérer les builds suivants
+**Setup Python** : Installe Python 3.13.
+
+```yaml
+- name: Install Poetry
+  uses: snok/install-poetry@v1
+  with:
+    version: ${{ env.POETRY_VERSION }}
+    virtualenvs-create: true
+    virtualenvs-in-project: true
+```
+**Poetry** : Installe Poetry avec un virtualenv dans le projet (`.venv/`).
+
+```yaml
+- name: Load cached venv
+  uses: actions/cache@v4
+  with:
+    path: .venv
+    key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+```
+**Cache** : Réutilise le virtualenv si `poetry.lock` n'a pas changé.
 
 ```yaml
 - name: Install dependencies
-  run: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
+  if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+  run: poetry install --no-interaction --no-root
 ```
-**Dépendances** : Installe les packages du projet.
+**Dépendances** : Installe les packages uniquement si le cache est manquant.
 
 ```yaml
 - name: Run flake8 linting
-  run: python -m flake8
+  run: poetry run python -m flake8
 ```
-**Linting** : Vérifie le style de code (PEP 8).
+**Linting** : Vérifie le style de code (PEP 8) via Poetry.
 
 ```yaml
 - name: Run tests with coverage
   env:
     SECRET_KEY: test-secret-key-for-ci
     DEBUG: 'True'
-  run: python -m pytest --cov --cov-fail-under=80
+  run: poetry run python -m pytest --cov --cov-fail-under=80
 ```
 **Tests** :
+- `poetry run` : Exécute dans le virtualenv Poetry
 - `env` : Variables d'environnement pour les tests
 - `--cov` : Active la couverture de code
 - `--cov-fail-under=80` : Échoue si la couverture est < 80%
@@ -341,10 +359,10 @@ Developer                GitHub Actions              Docker Hub              Ren
 #### Les tests échouent
 ```bash
 # Vérifier localement
-python -m pytest --cov --cov-fail-under=80
+poetry run python -m pytest --cov --cov-fail-under=80
 
 # Vérifier le linting
-python -m flake8
+poetry run python -m flake8
 ```
 
 #### Le build Docker échoue

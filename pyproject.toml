@@ -1,0 +1,68 @@
+# =============================================================================
+# Configuration Poetry pour OC Lettings - Application Django
+# =============================================================================
+# Ce fichier remplace requirements.txt et setup.cfg pour la gestion des
+# dépendances et la configuration des outils de développement.
+# =============================================================================
+
+[tool.poetry]
+name = "oc-lettings-site"
+version = "1.0.0"
+description = "Application Django pour la gestion de locations immobilières - Projet OpenClassrooms"
+authors = ["Sebastien <your-email@example.com>"]
+readme = "README.md"
+license = "MIT"
+
+# Packages Python du projet
+packages = [
+    { include = "oc_lettings_site" },
+    { include = "lettings" },
+    { include = "profiles" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+django = "^4.2.16"
+sentry-sdk = "^2.47.0"
+python-dotenv = "^1.2.1"
+gunicorn = "^23.0.0"
+whitenoise = "^6.11.0"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.3.0"
+pytest = "^8.0.0"
+pytest-django = "^4.11.1"
+pytest-cov = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# =============================================================================
+# Configuration Flake8 (linting)
+# =============================================================================
+[tool.flake8]
+max-line-length = 99
+exclude = ["**/migrations/*", "venv", ".venv"]
+
+# =============================================================================
+# Configuration Pytest
+# =============================================================================
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "oc_lettings_site.settings"
+python_files = ["tests.py", "test_*.py"]
+addopts = "-v --cov=oc_lettings_site --cov=lettings --cov=profiles --cov-report=term-missing --cov-fail-under=80"
+
+# =============================================================================
+# Configuration Coverage
+# =============================================================================
+[tool.coverage.run]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/tests.py",
+    "*/__init__.py",
+    "*/asgi.py",
+    "*/wsgi.py",
+    "manage.py",
+]

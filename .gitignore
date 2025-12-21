@@ -1,8 +1,15 @@
 **/__pycache__
 *.pyc
-venv
+venv/
+.venv/
 .claude/
 .coverage
 htmlcov/
 .env
 debug.log
+staticfiles/
+
+# Poetry
+# Ne pas ignorer poetry.lock - il doit être versionné pour garantir
+# des builds reproductibles
+# poetry.lock

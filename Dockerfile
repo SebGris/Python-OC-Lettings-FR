@@ -2,35 +2,45 @@
 # Dockerfile pour OC Lettings - Application Django
 # =============================================================================
 # Ce fichier définit comment construire l'image Docker de l'application.
-# Il utilise une approche multi-stage pour optimiser la taille de l'image finale.
+# Il utilise Poetry pour la gestion des dépendances et une approche
+# multi-stage pour optimiser la taille de l'image finale.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage 1: Builder - Installation des dépendances
+# Stage 1: Builder - Installation des dépendances avec Poetry
 # -----------------------------------------------------------------------------
-# On utilise une image Python slim (légère) comme base
 FROM python:3.13-slim AS builder
 
 # Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Variables d'environnement pour optimiser Python dans Docker
-# PYTHONDONTWRITEBYTECODE=1 : Empêche Python de créer des fichiers .pyc
-# PYTHONUNBUFFERED=1 : Force les logs à s'afficher en temps réel
+# Variables d'environnement pour optimiser Python et Poetry dans Docker
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    # Configuration Poetry
+    POETRY_VERSION=1.8.4 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1
 
-# Installer les dépendances système nécessaires pour compiler certains packages
+# Ajouter Poetry au PATH
+ENV PATH="$POETRY_HOME/bin:$PATH"
+
+# Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copier le fichier des dépendances
-COPY requirements.txt .
+# Installer Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
-# Installer les dépendances Python dans un répertoire isolé
-# --prefix=/install permet de les copier facilement dans l'image finale
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+# Copier les fichiers de configuration Poetry
+COPY pyproject.toml poetry.lock* ./
+
+# Installer les dépendances (sans les dépendances de développement)
+# --only main : installe uniquement les dépendances de production
+RUN poetry install --only main --no-root
 
 
 # -----------------------------------------------------------------------------
@@ -51,8 +61,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # (ne jamais exécuter une app en tant que root en production)
 RUN useradd --create-home --shell /bin/bash appuser
 
-# Copier les dépendances Python depuis le stage builder
-COPY --from=builder /install /usr/local
+# Copier les packages Python installés depuis le stage builder
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copier le code source de l'application
 COPY --chown=appuser:appuser . .

@@ -7,6 +7,8 @@
 4. [Docker Compose](#4-docker-compose)
 5. [Bonnes pratiques appliquées](#5-bonnes-pratiques-appliquées)
 
+> **Note** : Ce projet utilise **Poetry** pour la gestion des dépendances Python.
+
 > **Commandes Docker** : Voir [docker-commands.md](docker-commands.md) pour la référence complète des commandes.
 
 ---
@@ -75,12 +77,31 @@ Notre Dockerfile utilise une approche **multi-stage** pour optimiser la taille d
 # =============================================================================
 # STAGE 1: Builder
 # =============================================================================
-FROM python:3.13-slim as builder
+FROM python:3.13-slim AS builder
 ```
 
 **Pourquoi `python:3.13-slim` ?**
 - `slim` : Version allégée sans packages superflus (~150MB vs ~1GB pour la version complète)
 - `3.13` : Version de Python compatible avec notre projet
+
+### Installation de Poetry dans Docker
+
+```dockerfile
+ENV POETRY_VERSION=1.8.4 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1
+
+ENV PATH="$POETRY_HOME/bin:$PATH"
+
+RUN curl -sSL https://install.python-poetry.org | python3 -
+```
+
+**Variables d'environnement Poetry** :
+- `POETRY_VERSION` : Version spécifique de Poetry à installer
+- `POETRY_HOME` : Répertoire d'installation de Poetry
+- `POETRY_VIRTUALENVS_CREATE=false` : Désactive la création de venv (inutile dans Docker)
+- `POETRY_NO_INTERACTION=1` : Mode non-interactif pour l'automatisation
 
 ### Comment savoir sur quel OS est basée une image Docker ?
 
@@ -169,56 +190,49 @@ Docker crée une "couche" (layer) pour chaque instruction `RUN`. En combinant le
 - Best practices Dockerfile : https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 
 ```dockerfile
-COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+COPY pyproject.toml poetry.lock* ./
+RUN poetry install --only main --no-root
 ```
 
-### Explication détaillée de la commande pip install
+### Explication détaillée de la commande poetry install
 
-`pip` est le gestionnaire de paquets de **Python**. Il permet d'installer des bibliothèques Python depuis PyPI (Python Package Index).
+`poetry` est le gestionnaire de dépendances moderne de **Python**. Il permet d'installer des bibliothèques Python depuis PyPI avec un fichier de verrouillage (`poetry.lock`) pour des builds reproductibles.
 
 **Décomposition de la commande :**
 
 | Partie | Explication |
 |--------|-------------|
-| `pip install` | Commande pour installer des packages Python |
-| `--no-cache-dir` | N'utilise pas le cache pip (réduit la taille de l'image Docker) |
-| `--prefix=/install` | Installe les packages dans `/install` au lieu du dossier par défaut |
-| `-r` | **Read** : lire la liste des packages depuis un fichier |
-| `requirements.txt` | Fichier contenant la liste des packages à installer |
+| `poetry install` | Commande pour installer les dépendances |
+| `--only main` | N'installe que les dépendances de production (pas les dépendances de dev) |
+| `--no-root` | N'installe pas le projet lui-même comme package |
 
-**Pourquoi `-r requirements.txt` ?**
+**Fichiers de configuration Poetry :**
 
-Le `-r` est un raccourci pour installer tous les packages d'un projet en une seule commande :
+| Fichier | Description |
+|---------|-------------|
+| `pyproject.toml` | Définit les dépendances et la configuration du projet |
+| `poetry.lock` | Verrouille les versions exactes pour des builds reproductibles |
 
-```bash
-# Avec -r (lit le fichier)
-pip install -r requirements.txt
+**Pourquoi Poetry plutôt que pip ?**
 
-# Équivalent à installer chaque package manuellement
-pip install django==4.2.16
-pip install flake8==7.3.0
-pip install pytest-django==4.11.1
-pip install pytest-cov==6.0.0
-pip install sentry-sdk==2.47.0
-pip install python-dotenv==1.2.1
-pip install gunicorn==23.0.0
-pip install whitenoise==6.11.0
+| pip + requirements.txt | Poetry |
+|------------------------|--------|
+| Versions non verrouillées par défaut | Verrouillage automatique avec `poetry.lock` |
+| Pas de distinction dev/prod native | Groupes de dépendances (`--only main`) |
+| Gestion manuelle des conflits | Résolution automatique des conflits |
+
+**Exemple de pyproject.toml :**
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.13"
+django = "^4.2.16"
+gunicorn = "^23.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+flake8 = "^7.3.0"
 ```
-
-**Pourquoi `--prefix=/install` ?**
-
-Dans un build multi-stage, on installe les packages dans un dossier séparé (`/install`) pour pouvoir les copier facilement vers l'image de production :
-
-```dockerfile
-# Stage 1 : Installation dans /install
-RUN pip install --prefix=/install -r requirements.txt
-
-# Stage 2 : Copie depuis /install vers /usr/local
-COPY --from=builder /install /usr/local
-```
-
-Cela permet de ne copier que les packages Python, sans les outils de build (gcc, etc.).
 
 ### Stage 2: Production
 
@@ -428,14 +442,14 @@ __pycache__/
 **Pourquoi ?** Accélère les builds en réutilisant les layers inchangés.
 
 ```dockerfile
-# On copie d'abord requirements.txt seul
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# On copie d'abord les fichiers Poetry seuls
+COPY pyproject.toml poetry.lock* ./
+RUN poetry install --only main --no-root
 
 # Puis le reste du code
 COPY . .
 ```
-→ Si le code change mais pas requirements.txt, pip install n'est pas réexécuté.
+→ Si le code change mais pas pyproject.toml/poetry.lock, poetry install n'est pas réexécuté.
 
 ### 5. Variables d'environnement
 **Pourquoi ?** Configuration flexible sans modifier l'image.
