@@ -228,11 +228,15 @@ RUN poetry install --only main --no-root
 python = "^3.13"
 django = "^4.2.16"
 gunicorn = "^23.0.0"
+whitenoise = "^6.11.0"
+psycopg2-binary = "^2.9.11"  # Driver PostgreSQL pour DATABASE_URL
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 flake8 = "^7.3.0"
 ```
+
+> **Note** : `psycopg2-binary` est le driver PostgreSQL pour Python. Il est nécessaire pour que Django puisse se connecter à PostgreSQL en production (via `DATABASE_URL`).
 
 ### Stage 2: Production
 

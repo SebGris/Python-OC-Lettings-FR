@@ -6,10 +6,98 @@
 
 | Date | Version | Description |
 |------|---------|-------------|
+| 2025-12-21 | 1.4.0 | Configuration PostgreSQL pour production (Supabase) |
 | 2025-11-30 | 1.3.0 | Corrections tests et migrations après refactorisation |
 | 2025-11-30 | 1.2.0 | Suite de tests complète (96% couverture) |
 | 2025-11-24 | 1.1.1 | Suppression setting USE_L10N dépréciée |
 | 2025-11-24 | 1.1.0 | Mise à jour Django 4.2.16 pour Python 3.13 |
+
+---
+
+## [1.4.0] - 2025-12-21 - Configuration PostgreSQL pour production
+
+### Résumé
+Configuration de PostgreSQL comme base de données de production via Supabase, permettant la persistance des données sur Render. SQLite reste utilisé pour le développement local.
+
+### Added
+
+#### Support PostgreSQL
+- **Dépendance** : Ajout de `psycopg2-binary = "^2.9.11"` dans `pyproject.toml`
+- **Configuration automatique** : `settings.py` détecte `DATABASE_URL` pour basculer entre SQLite et PostgreSQL
+
+#### Configuration Supabase
+- Base de données PostgreSQL gratuite hébergée sur Supabase
+- Connexion via Session Pooler pour applications web
+- Interface SQL intégrée pour vérification des données
+
+### Changed
+
+#### settings.py - Configuration base de données
+```python
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    # Production: PostgreSQL via DATABASE_URL
+    import urllib.parse
+    url = urllib.parse.urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": url.path[1:],
+            "USER": url.username,
+            "PASSWORD": url.password,
+            "HOST": url.hostname,
+            "PORT": url.port or "5432",
+        }
+    }
+else:
+    # Développement local: SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "oc-lettings-site.sqlite3"),
+        }
+    }
+```
+
+#### Documentation mise à jour
+- `memo/render.md` : Ajout section Supabase comme alternative à Render PostgreSQL
+- `memo/docker.md` : Ajout de psycopg2-binary dans l'exemple pyproject.toml
+
+### Configuration Render
+
+Variables d'environnement ajoutées sur Render :
+- `DATABASE_URL` : URL de connexion PostgreSQL Supabase
+
+### Migration des données
+
+Procédure pour charger les données locales vers PostgreSQL :
+
+```python
+# Sur Windows, utiliser Python pour définir les variables d'environnement
+poetry run python -c "
+import os
+os.environ['DATABASE_URL']='postgresql://...'
+os.environ['DJANGO_SETTINGS_MODULE']='oc_lettings_site.settings'
+import django
+django.setup()
+from django.core.management import call_command
+call_command('migrate')
+call_command('loaddata', 'fixtures.json')
+"
+```
+
+### Architecture finale
+
+| Environnement | Base de données | Configuration |
+|---------------|-----------------|---------------|
+| **Développement** | SQLite | Automatique (pas de `DATABASE_URL`) |
+| **Production (Render)** | PostgreSQL (Supabase) | Via `DATABASE_URL` |
+
+### Files Modified
+- `pyproject.toml` : Ajout psycopg2-binary
+- `poetry.lock` : Mise à jour des dépendances
+- `oc_lettings_site/settings.py` : Configuration automatique PostgreSQL/SQLite
 
 ---
 

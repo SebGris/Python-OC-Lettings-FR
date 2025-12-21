@@ -182,7 +182,18 @@ Render va :
 | Un seul utilisateur à la fois | Multi-utilisateurs |
 | Pas de persistance sur Render | Données persistantes |
 
-### Créer une base PostgreSQL sur Render
+### Options pour PostgreSQL
+
+Deux options principales pour héberger PostgreSQL :
+
+| Option | Avantages | Inconvénients |
+|--------|-----------|---------------|
+| **Render PostgreSQL** | Intégration native, URL interne | Expire après 90 jours (tier gratuit) |
+| **Supabase** | Gratuit sans expiration, interface web SQL | Service externe, URL externe |
+
+---
+
+### Option A : Render PostgreSQL (intégré)
 
 1. Dashboard → **"+ New"** → **"PostgreSQL"**
 
@@ -199,7 +210,7 @@ Render va :
 
 3. Cliquer sur **"Create Database"**
 
-### Récupérer l'URL de connexion
+#### Récupérer l'URL de connexion Render
 
 1. Dashboard → Votre base de données → **"Info"**
 2. Copier **"Internal Database URL"** (pour les services Render)
@@ -215,6 +226,60 @@ Render va :
 │  postgres://user:password@dpg-xxx.frankfurt-postgres.render.com/db  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+> **Note** : Le tier gratuit Render PostgreSQL expire après 90 jours. Pour un projet long terme, considérez Supabase.
+
+---
+
+### Option B : Supabase (recommandé pour projets long terme)
+
+**Supabase** est une alternative open-source à Firebase qui offre PostgreSQL gratuit sans limite de temps.
+
+#### Créer un projet Supabase
+
+1. Aller sur **https://supabase.com** et créer un compte
+2. Créer un nouveau projet :
+   - **Organization** : Créer ou sélectionner
+   - **Project name** : `oc-lettings`
+   - **Database Password** : Générer et **sauvegarder** ce mot de passe
+   - **Region** : `West EU (Ireland)` ou plus proche
+
+3. Attendre la création (~2 minutes)
+
+#### Récupérer l'URL de connexion Supabase
+
+1. Dashboard → **Project Settings** (icône engrenage) → **Database**
+2. Section **"Connection string"** → Onglet **"URI"**
+3. Choisir **"Session Pooler"** (recommandé pour applications web)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Connection string                                                   │
+├─────────────────────────────────────────────────────────────────────┤
+│  Mode: Session (recommandé)                                         │
+│                                                                      │
+│  postgresql://postgres.[project-ref]:[YOUR-PASSWORD]@              │
+│  aws-0-eu-west-1.pooler.supabase.com:5432/postgres                  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+4. Remplacer `[YOUR-PASSWORD]` par le mot de passe créé à l'étape 2
+
+#### Pourquoi Session Pooler ?
+
+| Mode | Description | Usage |
+|------|-------------|-------|
+| **Session** | Connexion dédiée par session | Applications web (Django) ✓ |
+| **Transaction** | Connexion partagée par transaction | Serverless, haute charge |
+| **Direct** | Connexion directe sans pooler | Migrations, outils d'admin |
+
+#### Interface SQL Supabase
+
+Supabase offre un éditeur SQL intégré pour vérifier vos données :
+1. Dashboard → **SQL Editor**
+2. Exécuter des requêtes : `SELECT * FROM profiles_profile;`
+
+---
 
 ### Lier la base au Web Service
 
