@@ -347,12 +347,14 @@ services:
 - `PORT=8000` : Port fixe utilisé par Gunicorn dans le conteneur
 
 ```yaml
-    volumes:
-      - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
+    # volumes:
+    #   - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
 ```
-**Volumes** : Monte la base de données SQLite depuis l'hôte pour persister les données.
+**Volumes** (commenté par défaut) : Monte la base de données SQLite depuis l'hôte pour persister les données.
 - Format : `chemin_hôte:chemin_conteneur`
 - Permet de conserver les données même si le conteneur est supprimé
+
+> ⚠️ **Attention Windows** : Le montage de volumes SQLite depuis Windows vers un conteneur Linux peut causer l'erreur `OperationalError: attempt to write a readonly database`. Cela est dû aux différences de permissions entre les systèmes de fichiers Windows (NTFS) et Linux. Pour le développement local sur Windows, il est recommandé d'utiliser la base de données incluse dans l'image Docker plutôt qu'un volume monté.
 
 ```yaml
     restart: unless-stopped
@@ -380,9 +382,9 @@ Si vous ne souhaitez pas utiliser `docker-compose.yml`, vous pouvez lancer l'ima
 
 ```bash
 docker run -d -p 8000:8000 --name oc-lettings-app -e SECRET_KEY=votre-cle-secrete -e DEBUG=False -e ALLOWED_HOSTS=localhost,127.0.0.1 sebgris/oc-lettings:latest
-# Ajoutez l'option -v pour monter un volume
-docker run -d -p 8000:8000 --name oc-lettings-app -e SECRET_KEY=votre-cle-secrete -e DEBUG=False -e ALLOWED_HOSTS=localhost,127.0.0.1 -v ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3 sebgris/oc-lettings:latest
 ```
+
+> ⚠️ **Note sur les volumes SQLite** : L'option `-v ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3` pour monter la base de données est déconseillée sur Windows car elle peut causer l'erreur `attempt to write a readonly database`. Utilisez la base de données incluse dans l'image.
 
 **Explication des options :**
 

@@ -123,6 +123,9 @@ docker run -d -p 8000:8000 --name oc-lettings-app \
   oc-lettings
 
 # Lancer avec un volume (persistance des données)
+# ⚠️ ATTENTION: Sur Windows, le montage de volumes SQLite peut causer
+# l'erreur "attempt to write a readonly database". Dans ce cas,
+# n'utilisez pas l'option -v et utilisez la base incluse dans l'image.
 docker run -d -p 8000:8000 --name oc-lettings-app \
   -e SECRET_KEY=ma-cle-secrete \
   -e DEBUG=False \
@@ -414,13 +417,15 @@ docker push sebgris/oc-lettings:abc1234
 # Supprimer l'ancien conteneur si existe
 docker rm -f oc-lettings-app
 
-# Lancer le conteneur
+# Lancer le conteneur (sans volume - recommandé sur Windows)
 docker run -d -p 8000:8000 --name oc-lettings-app \
   -e SECRET_KEY=votre-cle-secrete \
   -e DEBUG=False \
   -e ALLOWED_HOSTS=localhost,127.0.0.1 \
-  -v ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3 \
   sebgris/oc-lettings:latest
+
+# ⚠️ Note: L'option -v pour monter la base SQLite est déconseillée sur Windows
+# car elle peut causer l'erreur "attempt to write a readonly database"
 
 # Accéder à http://localhost:8000
 ```

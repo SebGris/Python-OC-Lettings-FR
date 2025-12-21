@@ -310,9 +310,19 @@ docker-compose up
 
 ### Erreur de base de données
 
-Pour le développement local, la base SQLite doit être montée en volume.
+#### Erreur `attempt to write a readonly database`
 
-Vérifiez que le fichier `oc-lettings-site.sqlite3` existe à la racine du projet.
+Cette erreur survient généralement sur Windows lors du montage d'un volume SQLite. **Solution** : Ne montez pas la base de données en volume sur Windows. Le `docker-compose.yml` a été configuré pour utiliser la base de données incluse dans l'image Docker par défaut.
+
+Si vous avez décommenté les lignes de volume dans `docker-compose.yml`, recommentez-les :
+```yaml
+# volumes:
+#   - ./oc-lettings-site.sqlite3:/app/oc-lettings-site.sqlite3
+```
+
+#### Base de données manquante
+
+Si la base de données n'existe pas dans l'image, vérifiez que le fichier `oc-lettings-site.sqlite3` est bien présent à la racine du projet avant de construire l'image Docker.
 
 ---
 
