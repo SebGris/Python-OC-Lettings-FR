@@ -36,6 +36,10 @@ pytest = "^8.0.0"
 pytest-django = "^4.11.1"
 pytest-cov = "^6.0.0"
 
+[tool.poetry.group.docs.dependencies]
+sphinx = "^9.0.4"
+sphinx-rtd-theme = "^3.0.2"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
