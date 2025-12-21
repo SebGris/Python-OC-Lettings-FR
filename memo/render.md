@@ -5,10 +5,11 @@
 2. [Pourquoi Render ?](#2-pourquoi-render-)
 3. [Créer un compte Render](#3-créer-un-compte-render)
 4. [Créer un Web Service](#4-créer-un-web-service)
-5. [Configuration des variables d'environnement](#5-configuration-des-variables-denvironnement)
-6. [Deploy Hook (Webhook)](#6-deploy-hook-webhook)
-7. [Monitoring et Logs](#7-monitoring-et-logs)
-8. [Dépannage](#8-dépannage)
+5. [Configurer PostgreSQL](#5-configurer-postgresql)
+6. [Configuration des variables d'environnement](#6-configuration-des-variables-denvironnement)
+7. [Deploy Hook (Webhook)](#7-deploy-hook-webhook)
+8. [Monitoring et Logs](#8-monitoring-et-logs)
+9. [Dépannage](#9-dépannage)
 
 ---
 
@@ -170,7 +171,98 @@ Render va :
 
 ---
 
-## 5. Configuration des variables d'environnement
+## 5. Configurer PostgreSQL
+
+### Pourquoi PostgreSQL plutôt que SQLite ?
+
+| SQLite | PostgreSQL |
+|--------|------------|
+| Fichier local | Base de données serveur |
+| Pas adapté à la production | Adapté à la production |
+| Un seul utilisateur à la fois | Multi-utilisateurs |
+| Pas de persistance sur Render | Données persistantes |
+
+### Créer une base PostgreSQL sur Render
+
+1. Dashboard → **"+ New"** → **"PostgreSQL"**
+
+2. Configurer la base de données :
+
+| Paramètre | Valeur |
+|-----------|--------|
+| **Name** | `oc-lettings-db` |
+| **Database** | `oc_lettings` |
+| **User** | _(généré automatiquement)_ |
+| **Region** | `Frankfurt (EU Central)` |
+| **PostgreSQL Version** | `16` (ou dernière version) |
+| **Instance Type** | `Free` |
+
+3. Cliquer sur **"Create Database"**
+
+### Récupérer l'URL de connexion
+
+1. Dashboard → Votre base de données → **"Info"**
+2. Copier **"Internal Database URL"** (pour les services Render)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Connections                                                         │
+├─────────────────────────────────────────────────────────────────────┤
+│  Internal Database URL                                               │
+│  postgres://user:password@dpg-xxx.frankfurt-postgres.render.com/db  │
+│                                                                      │
+│  External Database URL                                               │
+│  postgres://user:password@dpg-xxx.frankfurt-postgres.render.com/db  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Lier la base au Web Service
+
+1. Dashboard → Votre Web Service → **"Environment"**
+2. Ajouter une variable :
+   - **Key** : `DATABASE_URL`
+   - **Value** : L'URL interne copiée
+
+### Initialiser la base de données
+
+Après le premier déploiement, vous devez créer les tables :
+
+1. Dashboard → Votre Web Service → **"Shell"**
+2. Exécuter :
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+### Fonctionnement dans le code
+
+Le fichier `settings.py` détecte automatiquement `DATABASE_URL` :
+
+```python
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    # Production: PostgreSQL
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            ...
+        }
+    }
+else:
+    # Développement local: SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            ...
+        }
+    }
+```
+
+---
+
+## 6. Configuration des variables d'environnement
 
 ### Accéder aux variables
 
@@ -184,6 +276,7 @@ Render va :
 ├─────────────────────────────────────────────────────────────────────┤
 │  Key                    Value                                        │
 │  ─────────────────────  ────────────────────────────────────────────│
+│  DATABASE_URL           postgres://user:pass@host/db                 │
 │  SECRET_KEY             votre-cle-secrete-tres-longue-et-complexe   │
 │  DEBUG                  False                                        │
 │  ALLOWED_HOSTS          python-oc-lettings-fr-vu8j.onrender.com     │
@@ -196,6 +289,7 @@ Render va :
 
 | Variable | Description | Valeur en production |
 |----------|-------------|---------------------|
+| `DATABASE_URL` | URL de connexion PostgreSQL | Depuis Render PostgreSQL (voir section 5) |
 | `SECRET_KEY` | Clé cryptographique Django pour les sessions, CSRF, etc. | Une clé unique et secrète (50+ caractères) |
 | `DEBUG` | Mode debug Django | **False** (JAMAIS True en production) |
 | `ALLOWED_HOSTS` | Domaines autorisés à accéder à l'app | L'URL Render de votre app |
@@ -218,7 +312,7 @@ Render va :
 
 ---
 
-## 6. Deploy Hook (Webhook)
+## 7. Deploy Hook (Webhook)
 
 ### Qu'est-ce qu'un Deploy Hook ?
 
@@ -284,7 +378,7 @@ deploy:
 
 ---
 
-## 7. Monitoring et Logs
+## 8. Monitoring et Logs
 
 ### Accéder aux logs
 
@@ -318,7 +412,7 @@ deploy:
 
 ---
 
-## 8. Dépannage
+## 9. Dépannage
 
 ### Erreur 502 Bad Gateway
 
