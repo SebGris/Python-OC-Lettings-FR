@@ -205,6 +205,29 @@ test:
 
 ### Job 2: Build & Push Docker
 
+> **Note** : Le Dockerfile utilise une approche **multi-stage** avec deux images. Voir [docker.md](docker.md#3-notre-dockerfile-expliqué) pour les détails complets.
+
+#### Pourquoi deux images (multi-stage) ?
+
+```
+┌─────────────────────────────────────┐     ┌─────────────────────────────────────┐
+│         Stage 1: Builder            │     │       Stage 2: Production           │
+├─────────────────────────────────────┤     ├─────────────────────────────────────┤
+│  - Python 3.13-slim                 │     │  - Python 3.13-slim                 │
+│  - gcc, curl (outils de build)      │     │  - Packages Python uniquement       │
+│  - Poetry                           │────▶│  - Code source                      │
+│  - Installation des dépendances     │     │  - Fichiers statiques               │
+│                                     │     │  - Utilisateur non-root             │
+│  Taille: ~500 MB                    │     │  Taille: ~200 MB                    │
+└─────────────────────────────────────┘     └─────────────────────────────────────┘
+         Image temporaire                          Image finale déployée
+```
+
+**Avantages** :
+- **Sécurité** : Pas d'outils de build (gcc, curl) en production
+- **Taille réduite** : L'image finale ne contient que le nécessaire
+- **Performance** : Téléchargement et démarrage plus rapides
+
 ```yaml
 build:
   name: Build & Push Docker Image
