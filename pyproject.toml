@@ -30,6 +30,7 @@ whitenoise = "^6.11.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.3.0"
+flake8-pyproject = "^1.2.3"
 pytest = "^8.0.0"
 pytest-django = "^4.11.1"
 pytest-cov = "^6.0.0"
