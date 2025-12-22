@@ -92,7 +92,7 @@ docs/
 # Configuration de base
 project = 'OC Lettings'
 copyright = '2025, OpenClassrooms'
-author = 'Sebastien'
+author = 'Sébastien Grison'
 release = '1.4.0'
 
 # Extensions Sphinx
