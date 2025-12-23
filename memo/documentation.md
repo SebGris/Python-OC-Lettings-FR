@@ -195,10 +195,10 @@ poetry run sphinx-build -M clean . _build
 ### Fonctionnement
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  git push   │────▶│   GitHub    │────▶│ Read The    │
-│  (master)   │     │  Webhook    │     │ Docs Build  │
-└─────────────┘     └─────────────┘     └─────────────┘
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│  git push   │ ────► │   GitHub    │ ────► │ Read The    │
+│  (master)   │       │  Webhook    │       │ Docs Build  │
+└─────────────┘       └─────────────┘       └─────────────┘
                                                │
                                                ▼
                                         Documentation
