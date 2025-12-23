@@ -8,10 +8,10 @@ Le projet utilise **GitHub Actions** pour l'intégration et le déploiement cont
 
 .. code-block:: text
 
-   ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
-   │  Push   │────▶│  Tests  │────▶│  Build  │────▶│ Deploy  │
-   │ (Git)   │     │ (pytest)│     │ (Docker)│     │ (Render)│
-   └─────────┘     └─────────┘     └─────────┘     └─────────┘
+   ┌─────────┐      ┌─────────┐      ┌─────────┐      ┌─────────┐
+   │  Push   │ ───► │  Tests  │ ───► │  Build  │ ───► │ Deploy  │
+   │ (Git)   │      │(pytest) │      │(Docker) │      │(Render) │
+   └─────────┘      └─────────┘      └─────────┘      └─────────┘
 
 Étapes du pipeline
 ^^^^^^^^^^^^^^^^^^
