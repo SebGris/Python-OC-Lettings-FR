@@ -88,26 +88,136 @@ docs/
 
 ### Fichier conf.py
 
+Le fichier `docs/conf.py` est le fichier de configuration principal de Sphinx. Voici son contenu complet avec explications détaillées :
+
 ```python
-# Configuration de base
+# Configuration file for the Sphinx documentation builder.
+#
+# For the full list of built-in configuration values, see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+import os
+import sys
+
+# Add project root to path for autodoc
+sys.path.insert(0, os.path.abspath('..'))
+
+# Set Django settings module for autodoc (optional - for local builds)
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oc_lettings_site.settings')
+os.environ.setdefault('SECRET_KEY', 'docs-build-secret-key')
+
+# Try to setup Django for autodoc (skip if not available)
+try:
+    import django
+    django.setup()
+except Exception:
+    pass  # Skip Django setup for Read The Docs
+
+# -- Project information -----------------------------------------------------
 project = 'OC Lettings'
-copyright = '2025, OpenClassrooms'
+copyright = '2025, Sébastien Grison'
 author = 'Sébastien Grison'
 release = '1.4.0'
 
-# Extensions Sphinx
+# -- General configuration ---------------------------------------------------
 extensions = [
-    'sphinx.ext.autodoc',    # Documentation auto depuis docstrings
-    'sphinx.ext.viewcode',   # Liens vers le code source
-    'sphinx.ext.napoleon',   # Support Google/NumPy docstrings
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon',
 ]
 
-# Langue française
+templates_path = ['_templates']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
 language = 'fr'
 
-# Thème Read The Docs
+# -- Options for HTML output -------------------------------------------------
 html_theme = 'sphinx_rtd_theme'
+html_static_path = ['_static']
+
+# Theme options
+html_theme_options = {
+    'navigation_depth': 3,
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+}
+
+# -- Options for autodoc -----------------------------------------------------
+autodoc_member_order = 'bysource'
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
 ```
+
+### Explication détaillée ligne par ligne
+
+#### 1. Imports et configuration du path Python
+
+| Code | Description |
+|------|-------------|
+| `import os` | Module pour interagir avec le système d'exploitation |
+| `import sys` | Module pour accéder aux paramètres de l'interpréteur Python |
+| `sys.path.insert(0, os.path.abspath('..'))` | Ajoute le répertoire parent (racine du projet) au path Python. Nécessaire pour que `autodoc` puisse importer les modules Django |
+
+#### 2. Configuration Django pour autodoc
+
+| Code | Description |
+|------|-------------|
+| `os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oc_lettings_site.settings')` | Définit le module de settings Django à utiliser |
+| `os.environ.setdefault('SECRET_KEY', 'docs-build-secret-key')` | Fournit une clé secrète pour éviter les erreurs lors du build |
+| `django.setup()` | Initialise Django pour permettre l'import des modèles |
+| `try/except` | Encapsule le setup Django pour éviter les erreurs sur Read The Docs |
+
+#### 3. Informations du projet
+
+| Variable | Valeur | Description |
+|----------|--------|-------------|
+| `project` | 'OC Lettings' | Nom du projet affiché dans la documentation |
+| `copyright` | '2025, Sébastien Grison' | Notice de copyright |
+| `author` | 'Sébastien Grison' | Auteur du projet |
+| `release` | '1.4.0' | Version actuelle du projet |
+
+#### 4. Extensions Sphinx
+
+| Extension | Description |
+|-----------|-------------|
+| `sphinx.ext.autodoc` | Génère automatiquement la documentation depuis les docstrings Python |
+| `sphinx.ext.viewcode` | Ajoute des liens vers le code source dans la documentation |
+| `sphinx.ext.napoleon` | Permet d'utiliser les formats Google ou NumPy pour les docstrings |
+
+#### 5. Configuration générale
+
+| Variable | Valeur | Description |
+|----------|--------|-------------|
+| `templates_path` | `['_templates']` | Dossier contenant les templates Jinja2 personnalisés |
+| `exclude_patterns` | `['_build', 'Thumbs.db', '.DS_Store']` | Fichiers/dossiers à ignorer lors du build |
+| `language` | `'fr'` | Langue de la documentation (français) |
+
+#### 6. Options de sortie HTML
+
+| Variable | Valeur | Description |
+|----------|--------|-------------|
+| `html_theme` | `'sphinx_rtd_theme'` | Thème Read The Docs (responsive, moderne) |
+| `html_static_path` | `['_static']` | Dossier pour les fichiers statiques (CSS, JS, images) |
+
+#### 7. Options du thème
+
+| Option | Valeur | Description |
+|--------|--------|-------------|
+| `navigation_depth` | `3` | Profondeur de la table des matières (3 niveaux) |
+| `collapse_navigation` | `False` | Ne pas replier les sections dans le menu |
+| `sticky_navigation` | `True` | Menu de navigation fixe lors du scroll |
+
+#### 8. Options autodoc
+
+| Option | Valeur | Description |
+|--------|--------|-------------|
+| `autodoc_member_order` | `'bysource'` | Ordre des membres : par ordre d'apparition dans le code source |
+| `members` | `True` | Documenter tous les membres (fonctions, classes, etc.) |
+| `undoc-members` | `True` | Inclure les membres sans docstring |
+| `show-inheritance` | `True` | Afficher l'héritage des classes |
 
 ### Dépendances (pyproject.toml)
 
@@ -177,6 +287,90 @@ Ce fichier liste les dépendances nécessaires pour construire la documentation 
 
 ## 6. Génération locale
 
+### Fichiers Makefile et make.bat
+
+Ces deux fichiers servent à **simplifier les commandes de build Sphinx** en fournissant des raccourcis.
+
+| Fichier | Système | Commande |
+|---------|---------|----------|
+| `Makefile` | Linux / macOS | `make html` |
+| `make.bat` | Windows | `.\make.bat html` |
+
+#### Contenu de make.bat (Windows)
+
+```batch
+@ECHO OFF
+pushd %~dp0
+
+REM Command file for Sphinx documentation
+
+if "%SPHINXBUILD%" == "" (
+    set SPHINXBUILD=sphinx-build
+)
+set SOURCEDIR=.
+set BUILDDIR=_build
+
+%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+popd
+```
+
+#### Contenu de Makefile (Linux/Mac)
+
+```makefile
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+SOURCEDIR     = .
+BUILDDIR      = _build
+
+help:
+    @$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+%: Makefile
+    @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+```
+
+#### Variables définies
+
+| Variable | Valeur | Description |
+|----------|--------|-------------|
+| `SPHINXBUILD` | `sphinx-build` | Commande Sphinx à utiliser |
+| `SOURCEDIR` | `.` | Dossier source (docs/) |
+| `BUILDDIR` | `_build` | Dossier de sortie |
+
+#### Fonctionnement
+
+Ces fichiers transforment la commande longue :
+```bash
+sphinx-build -M html . _build
+```
+
+En commande courte :
+```bash
+make html          # Linux/Mac
+.\make.bat html    # Windows
+```
+
+#### Commandes disponibles
+
+| Commande | Format généré |
+|----------|---------------|
+| `make html` / `.\make.bat html` | Site web HTML |
+| `make clean` / `.\make.bat clean` | Nettoie le dossier _build |
+| `make help` / `.\make.bat help` | Affiche toutes les options |
+| `make latex` | Document LaTeX |
+| `make epub` | E-book EPUB |
+| `make text` | Texte brut |
+
+#### Documentation officielle
+
+Ces fichiers sont **générés automatiquement** par Sphinx lors de l'initialisation d'un projet avec la commande `sphinx-quickstart`.
+
+| Ressource | Lien |
+|-----------|------|
+| Commande sphinx-build | [sphinx-doc.org/en/master/man/sphinx-build.html](https://www.sphinx-doc.org/en/master/man/sphinx-build.html) |
+| Commande sphinx-quickstart | [sphinx-doc.org/en/master/man/sphinx-quickstart.html](https://www.sphinx-doc.org/en/master/man/sphinx-quickstart.html) |
+| Tutorial Sphinx complet | [sphinx-doc.org/en/master/tutorial/index.html](https://www.sphinx-doc.org/en/master/tutorial/index.html) |
+
 ### Construire la documentation
 
 ```bash
@@ -205,8 +399,13 @@ Ouvrir `docs/_build/html/index.html` dans un navigateur.
 ### Nettoyer le build
 
 ```bash
+# Avec sphinx-build
 cd docs
 poetry run sphinx-build -M clean . _build
+
+# Ou avec make/make.bat
+make clean          # Linux/Mac
+.\make.bat clean    # Windows
 ```
 
 ---

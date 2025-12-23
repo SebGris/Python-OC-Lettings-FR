@@ -4,7 +4,7 @@ Introduction
 Description du projet
 ---------------------
 
-**OC Lettings** est une application web Django développée dans le cadre d'un projet OpenClassrooms. Elle permet la gestion de locations immobilières et de profils utilisateurs.
+**OC Lettings** est une application web Django permettant la gestion de locations immobilières et de profils utilisateurs.
 
 Objectifs du projet
 -------------------
