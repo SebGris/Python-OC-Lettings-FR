@@ -125,6 +125,8 @@ Les dépendances docs sont dans un groupe séparé pour ne pas les installer en 
 
 ### Fichier .readthedocs.yaml
 
+Ce fichier est le fichier de configuration pour **Read the Docs**. Il indique comment la plateforme doit construire et héberger votre documentation Sphinx.
+
 ```yaml
 version: 2
 
@@ -140,6 +142,25 @@ python:
   install:
     - requirements: docs/requirements.txt
 ```
+
+### Explication des paramètres
+
+| Paramètre | Valeur | Description |
+|-----------|--------|-------------|
+| `version` | 2 | Version du format de configuration Read The Docs |
+| `build.os` | ubuntu-22.04 | Système d'exploitation utilisé pour la build |
+| `build.tools.python` | 3.12 | Version de Python utilisée pour générer la doc |
+| `sphinx.configuration` | docs/conf.py | Chemin vers le fichier de configuration Sphinx |
+| `python.install` | docs/requirements.txt | Fichier des dépendances Python à installer |
+
+### Fonctionnement du fichier
+
+1. Quand vous poussez du code sur GitHub, Read the Docs détecte les changements
+2. Il lit ce fichier `.readthedocs.yaml` à la racine du projet
+3. Il crée un environnement Ubuntu 22.04 avec Python 3.12
+4. Il installe les dépendances listées dans `docs/requirements.txt`
+5. Il exécute Sphinx avec la configuration `docs/conf.py` pour générer le HTML
+6. La documentation est publiée automatiquement sur l'URL du projet
 
 ### Fichier docs/requirements.txt
 
