@@ -115,7 +115,7 @@ except Exception:
 
 # -- Project information -----------------------------------------------------
 project = 'OC Lettings'
-copyright = '2025, OpenClassrooms'
+copyright = '2025, Sébastien Grison'
 author = 'Sébastien Grison'
 release = '1.4.0'
 
@@ -175,7 +175,7 @@ autodoc_default_options = {
 | Variable | Valeur | Description |
 |----------|--------|-------------|
 | `project` | 'OC Lettings' | Nom du projet affiché dans la documentation |
-| `copyright` | '2025, OpenClassrooms' | Notice de copyright |
+| `copyright` | '2025, Sébastien Grison' | Notice de copyright |
 | `author` | 'Sébastien Grison' | Auteur du projet |
 | `release` | '1.4.0' | Version actuelle du projet |
 

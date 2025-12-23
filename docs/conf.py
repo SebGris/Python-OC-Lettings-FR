@@ -24,7 +24,7 @@ except Exception:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'OC Lettings'
-copyright = '2025, OpenClassrooms'
+copyright = '2025, Sébastien Grison'
 author = 'Sébastien Grison'
 release = '1.4.0'
 
