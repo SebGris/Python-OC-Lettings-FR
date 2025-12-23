@@ -287,6 +287,90 @@ Ce fichier liste les dépendances nécessaires pour construire la documentation 
 
 ## 6. Génération locale
 
+### Fichiers Makefile et make.bat
+
+Ces deux fichiers servent à **simplifier les commandes de build Sphinx** en fournissant des raccourcis.
+
+| Fichier | Système | Commande |
+|---------|---------|----------|
+| `Makefile` | Linux / macOS | `make html` |
+| `make.bat` | Windows | `.\make.bat html` |
+
+#### Contenu de make.bat (Windows)
+
+```batch
+@ECHO OFF
+pushd %~dp0
+
+REM Command file for Sphinx documentation
+
+if "%SPHINXBUILD%" == "" (
+    set SPHINXBUILD=sphinx-build
+)
+set SOURCEDIR=.
+set BUILDDIR=_build
+
+%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+popd
+```
+
+#### Contenu de Makefile (Linux/Mac)
+
+```makefile
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+SOURCEDIR     = .
+BUILDDIR      = _build
+
+help:
+    @$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+%: Makefile
+    @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+```
+
+#### Variables définies
+
+| Variable | Valeur | Description |
+|----------|--------|-------------|
+| `SPHINXBUILD` | `sphinx-build` | Commande Sphinx à utiliser |
+| `SOURCEDIR` | `.` | Dossier source (docs/) |
+| `BUILDDIR` | `_build` | Dossier de sortie |
+
+#### Fonctionnement
+
+Ces fichiers transforment la commande longue :
+```bash
+sphinx-build -M html . _build
+```
+
+En commande courte :
+```bash
+make html          # Linux/Mac
+.\make.bat html    # Windows
+```
+
+#### Commandes disponibles
+
+| Commande | Format généré |
+|----------|---------------|
+| `make html` / `.\make.bat html` | Site web HTML |
+| `make clean` / `.\make.bat clean` | Nettoie le dossier _build |
+| `make help` / `.\make.bat help` | Affiche toutes les options |
+| `make latex` | Document LaTeX |
+| `make epub` | E-book EPUB |
+| `make text` | Texte brut |
+
+#### Documentation officielle
+
+Ces fichiers sont **générés automatiquement** par Sphinx lors de l'initialisation d'un projet avec la commande `sphinx-quickstart`.
+
+| Ressource | Lien |
+|-----------|------|
+| Commande sphinx-build | [sphinx-doc.org/en/master/man/sphinx-build.html](https://www.sphinx-doc.org/en/master/man/sphinx-build.html) |
+| Commande sphinx-quickstart | [sphinx-doc.org/en/master/man/sphinx-quickstart.html](https://www.sphinx-doc.org/en/master/man/sphinx-quickstart.html) |
+| Tutorial Sphinx complet | [sphinx-doc.org/en/master/tutorial/index.html](https://www.sphinx-doc.org/en/master/tutorial/index.html) |
+
 ### Construire la documentation
 
 ```bash
@@ -315,8 +399,13 @@ Ouvrir `docs/_build/html/index.html` dans un navigateur.
 ### Nettoyer le build
 
 ```bash
+# Avec sphinx-build
 cd docs
 poetry run sphinx-build -M clean . _build
+
+# Ou avec make/make.bat
+make clean          # Linux/Mac
+.\make.bat clean    # Windows
 ```
 
 ---
