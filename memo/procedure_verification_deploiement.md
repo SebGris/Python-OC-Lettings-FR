@@ -159,11 +159,17 @@ git push origin master
 
 ## 5. Etape 4 : Verifier le deploiement sur Render
 
+### Declencher le deploiement manuel
+
+1. Aller sur le dashboard Render : https://dashboard.render.com/web/srv-d50jl275r7bs739gbd60/events
+2. Sous le bouton **"Manual Deploy"**, cliquer sur **"Deploy latest commit"**
+3. Attendre que le deploiement soit termine (statut "Live")
+
 ### URL de l'application
 
 Acceder a l'application deployee :
 ```
-https://python-oc-lettings-fr-sg.onrender.com
+https://python-oc-lettings-fr-vu8j.onrender.com
 ```
 
 *(Remplacez par votre URL Render si differente)*
@@ -212,8 +218,14 @@ docker pull monusername/oc-lettings:latest
 ### Verifier que l'image est telechargee
 
 ```bash
-# Lister les images Docker locales
+# Lister les images Docker locales (Linux/Mac)
 docker images | grep oc-lettings
+
+# Lister les images Docker locales (Windows)
+docker images | findstr oc-lettings
+
+# Ou simplement lister toutes les images
+docker images
 ```
 
 **Resultat attendu :**
