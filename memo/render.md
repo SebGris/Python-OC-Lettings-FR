@@ -344,7 +344,7 @@ else:
 │  DATABASE_URL           postgres://user:pass@host/db                │
 │  SECRET_KEY             votre-cle-secrete-tres-longue-et-complexe   │
 │  DEBUG                  False                                       │
-│  ALLOWED_HOSTS          python-oc-lettings-fr-vu8j.onrender.com     │
+│  ALLOWED_HOSTS          oc-lettings-latest-v3go.onrender.com     │
 │  SENTRY_DSN             https://xxx@sentry.io/xxx                   │
 │  SENTRY_ENVIRONMENT     production                                  │
 └─────────────────────────────────────────────────────────────────────┘
@@ -529,7 +529,7 @@ deploy:
 
 | Service | URL |
 |---------|-----|
-| **Application** | https://python-oc-lettings-fr-vu8j.onrender.com |
+| **Application** | https://oc-lettings-latest-v3go.onrender.com |
 | **Dashboard Render** | https://dashboard.render.com/web/srv-d50jl275r7bs739gbd60 |
 | **Docker Hub** | https://hub.docker.com/r/sebgris/oc-lettings |
 

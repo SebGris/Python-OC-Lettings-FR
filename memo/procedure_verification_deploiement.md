@@ -169,7 +169,7 @@ git push origin master
 
 Acceder a l'application deployee :
 ```
-https://python-oc-lettings-fr-vu8j.onrender.com
+https://oc-lettings-latest-v3go.onrender.com
 ```
 
 *(Remplacez par votre URL Render si differente)*
