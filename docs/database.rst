@@ -123,26 +123,61 @@ Diagramme des relations
 
 .. code-block:: text
 
-   ┌─────────────────┐
-   │     User        │
-   │  (Django Auth)  │
-   └────────┬────────┘
-            │ 1:1
-            ▼
-   ┌─────────────────┐
-   │    Profile      │
-   │ - favorite_city │
-   └─────────────────┘
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │                           OC LETTINGS - MODELE DE DONNEES                   │
+   └─────────────────────────────────────────────────────────────────────────────┘
 
-   ┌─────────────────┐      ┌─────────────────┐
-   │    Address      │◄─────│    Letting      │
-   │ - number        │  1:1 │ - title         │
-   │ - street        │      └─────────────────┘
-   │ - city          │
-   │ - state         │
-   │ - zip_code      │
-   │ - country_iso   │
-   └─────────────────┘
+   ┌──────────────────────────────────┐      ┌─────────────────────────────────┐
+   │           APPLICATION            │      │           APPLICATION           │
+   │            PROFILES              │      │            LETTINGS             │
+   └──────────────────────────────────┘      └─────────────────────────────────┘
+
+   ┌──────────────────────────────────┐      ┌─────────────────────────────────┐
+   │           auth.User              │      │            Letting              │
+   │         (Django Auth)            │      │                                 │
+   ├──────────────────────────────────┤      ├─────────────────────────────────┤
+   │  PK │ id          │ INTEGER      │      │  PK │ id          │ INTEGER     │
+   ├──────────────────────────────────┤      ├─────────────────────────────────┤
+   │     │ username    │ VARCHAR(150) │      │     │ title       │ VARCHAR(256)│
+   │     │ password    │ VARCHAR(128) │      │  FK │ address_id  │ INTEGER     │
+   │     │ email       │ VARCHAR(254) │      └───────────────┬─────────────────┘
+   │     │ first_name  │ VARCHAR(150) │                      │
+   │     │ last_name   │ VARCHAR(150) │                      │ 1:1
+   │     │ is_active   │ BOOLEAN      │                      │
+   │     │ is_staff    │ BOOLEAN      │                      ▼
+   │     │ date_joined │ DATETIME     │      ┌─────────────────────────────────┐
+   └────────────────┬─────────────────┘      │            Address              │
+                    │                        ├─────────────────────────────────┤
+                    │ 1:1                    │  PK │ id               │ INTEGER│
+                    │                        ├─────────────────────────────────┤
+                    ▼                        │     │ number           │ INTEGER│
+   ┌──────────────────────────────────┐      │     │ street           │ VARCHAR│
+   │            Profile               │      │     │ city             │ VARCHAR│
+   ├──────────────────────────────────┤      │     │ state            │ CHAR(2)│
+   │  PK │ id            │ INTEGER    │      │     │ zip_code         │ INTEGER│
+   ├──────────────────────────────────┤      │     │ country_iso_code │ CHAR(3)│
+   │  FK │ user_id       │ INTEGER    │      └─────────────────────────────────┘
+   │     │ favorite_city │ VARCHAR(64)│
+   └──────────────────────────────────┘
+
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │                              LEGENDE                                        │
+   ├─────────────────────────────────────────────────────────────────────────────┤
+   │  PK = Cle primaire (Primary Key)                                            │
+   │  FK = Cle etrangere (Foreign Key)                                           │
+   │                                                                             │
+   │  Relations:                                                                 │
+   │  ─────────────────────────────────────────────────────────────────────────  │
+   │  auth.User ───── 1:1 ────► Profile     Un utilisateur a un seul profil      │
+   │  Letting   ───── 1:1 ────► Address     Une location a une seule adresse     │
+   │                                                                             │
+   │  Contraintes:                                                               │
+   │  ─────────────────────────────────────────────────────────────────────────  │
+   │  - Profile.user_id : UNIQUE, ON DELETE CASCADE                              │
+   │  - Letting.address_id : UNIQUE, ON DELETE CASCADE                           │
+   │  - Address.number : max 9999                                                │
+   │  - Address.zip_code : max 99999                                             │
+   └─────────────────────────────────────────────────────────────────────────────┘
 
 Migrations
 ----------
