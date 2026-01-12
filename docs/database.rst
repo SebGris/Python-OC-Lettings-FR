@@ -121,63 +121,57 @@ Profile (Profil)
 Diagramme des relations
 -----------------------
 
-.. code-block:: text
+.. mermaid::
 
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │                           OC LETTINGS - MODELE DE DONNEES                   │
-   └─────────────────────────────────────────────────────────────────────────────┘
+   erDiagram
+       User ||--|| Profile : "has one"
+       Letting ||--|| Address : "has one"
 
-   ┌──────────────────────────────────┐      ┌───────────────────────────────────────┐
-   │           APPLICATION            │      │              APPLICATION              │
-   │            PROFILES              │      │               LETTINGS                │
-   └──────────────────────────────────┘      └───────────────────────────────────────┘
+       User {
+           int id PK
+           varchar username
+           varchar password
+           varchar email
+           varchar first_name
+           varchar last_name
+           boolean is_active
+           boolean is_staff
+           datetime date_joined
+       }
 
-   ┌──────────────────────────────────┐      ┌───────────────────────────────────────┐
-   │           auth.User              │      │              Letting                  │
-   │         (Django Auth)            │      │                                       │
-   ├──────────────────────────────────┤      ├───────────────────────────────────────┤
-   │  PK │ id          │ INTEGER      │      │  PK │ id          │ INTEGER           │
-   ├──────────────────────────────────┤      ├───────────────────────────────────────┤
-   │     │ username    │ VARCHAR(150) │      │     │ title       │ VARCHAR(256)      │
-   │     │ password    │ VARCHAR(128) │      │  FK │ address_id  │ INTEGER           │
-   │     │ email       │ VARCHAR(254) │      └─────────────────┬─────────────────────┘
-   │     │ first_name  │ VARCHAR(150) │                        │
-   │     │ last_name   │ VARCHAR(150) │                        │ 1:1
-   │     │ is_active   │ BOOLEAN      │                        │
-   │     │ is_staff    │ BOOLEAN      │                        ▼
-   │     │ date_joined │ DATETIME     │      ┌───────────────────────────────────────┐
-   └────────────────┬─────────────────┘      │              Address                  │
-                    │                        ├───────────────────────────────────────┤
-                    │ 1:1                    │  PK │ id               │ INTEGER      │
-                    │                        ├───────────────────────────────────────┤
-                    ▼                        │     │ number           │ INTEGER      │
-   ┌──────────────────────────────────┐      │     │ street           │ VARCHAR(64)  │
-   │            Profile               │      │     │ city             │ VARCHAR(64)  │
-   ├──────────────────────────────────┤      │     │ state            │ CHAR(2)      │
-   │  PK │ id            │ INTEGER    │      │     │ zip_code         │ INTEGER      │
-   ├──────────────────────────────────┤      │     │ country_iso_code │ CHAR(3)      │
-   │  FK │ user_id       │ INTEGER    │      └───────────────────────────────────────┘
-   │     │ favorite_city │ VARCHAR(64)│
-   └──────────────────────────────────┘
+       Profile {
+           int id PK
+           int user_id FK
+           varchar favorite_city
+       }
 
-   ┌─────────────────────────────────────────────────────────────────────────────┐
-   │                              LEGENDE                                        │
-   ├─────────────────────────────────────────────────────────────────────────────┤
-   │  PK = Cle primaire (Primary Key)                                            │
-   │  FK = Cle etrangere (Foreign Key)                                           │
-   │                                                                             │
-   │  Relations:                                                                 │
-   │  ─────────────────────────────────────────────────────────────────────────  │
-   │  auth.User ───── 1:1 ────► Profile     Un utilisateur a un seul profil      │
-   │  Letting   ───── 1:1 ────► Address     Une location a une seule adresse     │
-   │                                                                             │
-   │  Contraintes:                                                               │
-   │  ─────────────────────────────────────────────────────────────────────────  │
-   │  - Profile.user_id : UNIQUE, ON DELETE CASCADE                              │
-   │  - Letting.address_id : UNIQUE, ON DELETE CASCADE                           │
-   │  - Address.number : max 9999                                                │
-   │  - Address.zip_code : max 99999                                             │
-   └─────────────────────────────────────────────────────────────────────────────┘
+       Letting {
+           int id PK
+           varchar title
+           int address_id FK
+       }
+
+       Address {
+           int id PK
+           int number
+           varchar street
+           varchar city
+           char state
+           int zip_code
+           char country_iso_code
+       }
+
+**Légende des relations :**
+
+- **User → Profile** : Relation 1:1 (un utilisateur a un seul profil)
+- **Letting → Address** : Relation 1:1 (une location a une seule adresse)
+
+**Contraintes :**
+
+- ``Profile.user_id`` : UNIQUE, ON DELETE CASCADE
+- ``Letting.address_id`` : UNIQUE, ON DELETE CASCADE
+- ``Address.number`` : max 9999
+- ``Address.zip_code`` : max 99999
 
 Migrations
 ----------
