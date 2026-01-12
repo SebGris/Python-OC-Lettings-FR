@@ -1,7 +1,4 @@
 # Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
 import sys
@@ -9,28 +6,27 @@ import sys
 # Add project root to path for autodoc
 sys.path.insert(0, os.path.abspath('..'))
 
-# Set Django settings module for autodoc (optional - for local builds)
+# Set required Django settings for autodoc
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oc_lettings_site.settings')
-os.environ.setdefault('SECRET_KEY', 'docs-build-secret-key')
+os.environ.setdefault('SECRET_KEY', 'docs-build-secret-key-for-sphinx-readthedocs')
+os.environ.setdefault('DEBUG', 'False')
+os.environ.setdefault('ALLOWED_HOSTS', 'localhost,readthedocs.org')
 
-# Try to setup Django for autodoc (skip if not available)
+# Setup Django for autodoc
+import django
 try:
-    import django
     django.setup()
-except Exception:
-    pass  # Skip Django setup for Read The Docs
+except Exception as e:
+    # Silently continue if Django setup fails
+    pass
 
 # -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 project = 'OC Lettings'
 copyright = '2025, Sébastien Grison'
 author = 'Sébastien Grison'
 release = '1.4.0'
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
@@ -43,8 +39,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 language = 'fr'
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
