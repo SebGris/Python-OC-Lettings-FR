@@ -2,6 +2,7 @@
 
 import os
 import sys
+import django
 
 # Add project root to path for autodoc
 sys.path.insert(0, os.path.abspath('..'))
@@ -13,10 +14,9 @@ os.environ.setdefault('DEBUG', 'False')
 os.environ.setdefault('ALLOWED_HOSTS', 'localhost,readthedocs.org')
 
 # Setup Django for autodoc
-import django
 try:
     django.setup()
-except Exception as e:
+except Exception:
     # Silently continue if Django setup fails
     pass
 
