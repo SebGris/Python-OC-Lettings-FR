@@ -17,3 +17,6 @@ staticfiles/
 # Sphinx documentation build
 docs/_build/
 memo
+
+# Claude Code temporary files
+tmpclaude-*
