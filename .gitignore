@@ -8,6 +8,7 @@ htmlcov/
 .env
 debug.log
 staticfiles/
+.pytest_cache/
 
 # Poetry
 # Ne pas ignorer poetry.lock - il doit être versionné pour garantir
