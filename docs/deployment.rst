@@ -122,5 +122,5 @@ Configuration dans ``settings.py`` :
 URL de l'application
 --------------------
 
-* **Production** : https://oc-lettings-latest-v3go.onrender.com
-* **Admin** : https://oc-lettings-latest-v3go.onrender.com/admin/
+* **Production** : https://oc-lettings-latest-vu8j.onrender.com/
+* **Admin** : https://oc-lettings-latest-vu8j.onrender.com//admin/

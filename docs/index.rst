@@ -41,7 +41,7 @@ Architecture
 Liens utiles
 ------------
 
-* **Application en ligne** : https://oc-lettings-latest-v3go.onrender.com
+* **Application en ligne** : https://oc-lettings-latest-vu8j.onrender.com/
 * **Code source** : https://github.com/SebGris/Python-OC-Lettings-FR
 * **Docker Hub** : https://hub.docker.com/r/sebgris/oc-lettings
 
