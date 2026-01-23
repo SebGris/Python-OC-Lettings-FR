@@ -77,7 +77,7 @@ jobs:
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: 'True'
         run: |
-          poetry run python -m pytest --cov --cov-fail-under=80
+          poetry run python -m pytest --cov --cov-fail-under=99
 
   # ===========================================================================
   # JOB 2: Build et Push Docker Image
